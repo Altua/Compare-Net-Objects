@@ -22,7 +22,7 @@ namespace KellermanSoftware.CompareNetObjects
             Config = config;
             Differences = new List<Difference>();
 
-            #if !PORTABLE && !NEWPCL
+            #if !PORTABLE
                 Watch = new Stopwatch();
             #endif
         }
@@ -39,7 +39,7 @@ namespace KellermanSoftware.CompareNetObjects
         /// </summary>
         public ComparisonConfig Config { get; private set; }
 
-        #if !PORTABLE && !NEWPCL
+        #if !PORTABLE
             internal Stopwatch Watch { get; set; }
 
             /// <summary>
@@ -111,9 +111,11 @@ namespace KellermanSoftware.CompareNetObjects
         /// <summary>
         /// Add parent, handle references count
         /// </summary>
-        /// <param name="hash"></param>
-        protected internal void AddParent(int hash)
+        /// <param name="obj">The parent object</param>
+        internal void AddParent(object obj)
         {
+            int hash = obj.GetHashCode();
+
             if (hash == 0)
             {
                 return;
@@ -134,9 +136,11 @@ namespace KellermanSoftware.CompareNetObjects
         /// <summary>
         /// Remove parent, handle references count
         /// </summary>
-        /// <param name="hash"></param>
-        protected internal void RemoveParent(int hash)
+        /// <param name="obj">The parent object</param>
+        internal void RemoveParent(object obj)
         {
+            int hash = obj.GetHashCode();
+
             if (Parents.ContainsKey(hash))
             {
                 if (Parents[hash] <= 1)
