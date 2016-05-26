@@ -69,13 +69,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 return;
             }
 
-            //Skip properties where both point to the corresponding parent
-            if ((TypeHelper.IsClass(info.PropertyType) || TypeHelper.IsInterface(info.PropertyType) ||
-                 TypeHelper.IsStruct(info.PropertyType)))
-            {
-                return;
-            }
-
             string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, info.Name);
 
             CompareParms childParms = new CompareParms
