@@ -58,8 +58,12 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
             object objectValue1;
             object objectValue2;
-            if (!IsValidIndexer(parms.Config, info, parms.BreadCrumb))
+            bool isIndexer;
+            if (!IsValidIndexer(parms.Config, info, parms.BreadCrumb, out isIndexer))
             {
+                if (isIndexer)
+                    return;
+
                 objectValue1 = info.GetValue(parms.Object1, null);
                 objectValue2 = secondObjectInfo != null ? secondObjectInfo.GetValue(parms.Object2, null) : null;
             }
@@ -133,14 +137,17 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         }
 
 
-        private bool IsValidIndexer(ComparisonConfig config, PropertyInfo info, string breadCrumb)
+        private bool IsValidIndexer(ComparisonConfig config, PropertyInfo info, string breadCrumb, out bool indexer)
         {
             ParameterInfo[] indexers = info.GetIndexParameters();
 
             if (indexers.Length == 0)
             {
+                indexer = false;
                 return false;
             }
+
+            indexer = true;
 
             if (config.SkipInvalidIndexers)
                 return false;
