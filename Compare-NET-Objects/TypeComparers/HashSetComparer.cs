@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using KellermanSoftware.CompareNetObjects.IgnoreOrderTypes;
 
+
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
 {
     /// <summary>
@@ -19,16 +20,71 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
         }
 
-        /// <summary>
-        /// Returns true if both objects are hash sets
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
+        private void CompareItems(CompareParms parms)
         {
-            return TypeHelper.IsHashSet(type1) && TypeHelper.IsHashSet(type2);
+            int count = 0;
+
+            //Get enumerators by reflection
+            MethodInfo method1Info = Cache.GetMethod(parms.Object1Type, "GetEnumerator");
+            IEnumerator enumerator1 = (IEnumerator) method1Info.Invoke(parms.Object1, null);
+
+            MethodInfo method2Info = Cache.GetMethod(parms.Object2Type, "GetEnumerator");
+            IEnumerator enumerator2 = (IEnumerator) method2Info.Invoke(parms.Object2, null);
+
+            while (enumerator1.MoveNext() && enumerator2.MoveNext())
+            {
+                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
+
+                CompareParms childParms = new CompareParms
+                {
+                    Result = parms.Result,
+                    Config = parms.Config,
+                    ParentObject1 = parms.Object1,
+                    ParentObject2 = parms.Object2,
+                    Object1 = enumerator1.Current,
+                    Object2 = enumerator2.Current,
+                    BreadCrumb = currentBreadCrumb
+                };
+
+                RootComparer.Compare(childParms);
+
+                if (parms.Result.ExceededDifferences)
+                    return;
+
+                count++;
+            }
         }
+
+
+        private bool HashSetsDifferentCount(CompareParms parms)
+        {
+            //Get count by reflection since we can't cast it to HashSet<>
+            int hashSet1Count = (int) Cache.GetPropertyValue(parms.Result, parms.Object1Type, parms.Object1, "Count");
+            int hashSet2Count = (int) Cache.GetPropertyValue(parms.Result, parms.Object2Type, parms.Object2, "Count");
+
+            //Objects must be the same length
+            if (hashSet1Count != hashSet2Count)
+            {
+                Difference difference = new Difference
+                {
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb,
+                    Object1Value = hashSet1Count.ToString(CultureInfo.InvariantCulture),
+                    Object2Value = hashSet2Count.ToString(CultureInfo.InvariantCulture),
+                    ChildPropertyName = "Count",
+                    Object1 = new WeakReference(parms.Object1),
+                    Object2 = new WeakReference(parms.Object2)
+                };
+
+                AddDifference(parms.Result, difference);
+
+                return true;
+            }
+
+            return false;
+        }
+
 
         /// <summary>
         /// Compare two hash sets
@@ -68,68 +124,16 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             }
         }
 
-        private void CompareItems(CompareParms parms)
+
+        /// <summary>
+        /// Returns true if both objects are hash sets
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
         {
-            int count = 0;
-
-            //Get enumerators by reflection
-            MethodInfo method1Info = Cache.GetMethod(parms.Object1Type, "GetEnumerator");
-            IEnumerator enumerator1 = (IEnumerator)method1Info.Invoke(parms.Object1, null);
-
-            MethodInfo method2Info = Cache.GetMethod(parms.Object2Type, "GetEnumerator");
-            IEnumerator enumerator2 = (IEnumerator) method2Info.Invoke(parms.Object2, null);
-
-            while (enumerator1.MoveNext() && enumerator2.MoveNext())
-            {
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
-
-                CompareParms childParms = new CompareParms
-                {
-                    Result = parms.Result,
-                    Config = parms.Config,
-                    ParentObject1 = parms.Object1,
-                    ParentObject2 = parms.Object2,
-                    Object1 = enumerator1.Current,
-                    Object2 = enumerator2.Current,
-                    BreadCrumb = currentBreadCrumb
-                };
-
-                RootComparer.Compare(childParms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-
-                count++;
-            }
-        }
-
-        private bool HashSetsDifferentCount(CompareParms parms)
-        {
-            //Get count by reflection since we can't cast it to HashSet<>
-            int hashSet1Count = (int) Cache.GetPropertyValue(parms.Result, parms.Object1Type, parms.Object1, "Count");
-            int hashSet2Count = (int)Cache.GetPropertyValue(parms.Result, parms.Object2Type, parms.Object2, "Count");
-
-            //Objects must be the same length
-            if (hashSet1Count != hashSet2Count)
-            {
-                Difference difference = new Difference
-                                            {
-                                                ParentObject1 = new WeakReference(parms.ParentObject1),
-                                                ParentObject2 = new WeakReference(parms.ParentObject2),
-                                                PropertyName = parms.BreadCrumb,
-                                                Object1Value = hashSet1Count.ToString(CultureInfo.InvariantCulture),
-                                                Object2Value = hashSet2Count.ToString(CultureInfo.InvariantCulture),
-                                                ChildPropertyName = "Count",
-                                                Object1 = new WeakReference(parms.Object1),
-                                                Object2 = new WeakReference(parms.Object2)
-                                            };
-
-                AddDifference(parms.Result, difference);
-
-                return true;
-            }
-
-            return false;
+            return TypeHelper.IsHashSet(type1) && TypeHelper.IsHashSet(type2);
         }
     }
 }

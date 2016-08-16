@@ -54,7 +54,7 @@ namespace KellermanSoftware.CompareNetObjects
         /// <summary>
         /// Keep track of parent objects in the object hiearchy
         /// </summary>
-        internal readonly Dictionary<int, int> Parents = new Dictionary<int, int>();
+        internal readonly Dictionary<object, bool> Parents = new Dictionary<object, bool>();
 
         /// <summary>
         /// The differences found during the compare
@@ -105,51 +105,31 @@ namespace KellermanSoftware.CompareNetObjects
         {
             get { return Differences.Count >= Config.MaxDifferences; }
         }
+
         #endregion
 
+
         #region Methods
+
         /// <summary>
         /// Add parent, handle references count
         /// </summary>
-        /// <param name="obj">The parent object</param>
-        internal void AddParent(object obj)
+        /// <param name="parent">The parent object</param>
+        internal void AddParent(object parent)
         {
-            int hash = obj.GetHashCode();
-
-            if (hash == 0)
-            {
-                return;
-            }
-
-            if (!Parents.ContainsKey(hash))
-            {
-                Parents.Add(hash, 1);
-            }
-            else
-            {
-                Parents[hash]++;
-            }
+            //Parents.Add(parent, true);
         }
-
 
 
         /// <summary>
         /// Remove parent, handle references count
         /// </summary>
-        /// <param name="obj">The parent object</param>
-        internal void RemoveParent(object obj)
+        /// <param name="parent"></param>
+        internal void RemoveParent(object parent)
         {
-            int hash = obj.GetHashCode();
-
-            if (Parents.ContainsKey(hash))
-            {
-                if (Parents[hash] <= 1)
-                    Parents.Remove(hash);
-                else Parents[hash]--;
-            }
+            //Parents.Remove(parent);
         }
+
         #endregion
-
-
     }
 }
