@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
+
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
 {
     /// <summary>
@@ -11,6 +12,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
     public class FieldComparer : BaseComparer
     {
         private readonly RootComparer _rootComparer;
+
 
         /// <summary>
         /// Constructor with a root comparer
@@ -21,21 +23,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             _rootComparer = rootComparer;
         }
 
-        /// <summary>
-        /// Compare the fields of a class
-        /// </summary>
-        public void PerformCompareFields(CompareParms parms)
-        {
-            var currentFields = GetCurrentFields(parms);
-
-            foreach (FieldInfo item in currentFields)
-            {
-                CompareField(parms, item);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-            }
-        }
 
         private void CompareField(CompareParms parms, FieldInfo item)
         {
@@ -57,16 +44,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             object objectValue1 = item.GetValue(parms.Object1);
             object objectValue2 = secondFieldInfo != null ? secondFieldInfo.GetValue(parms.Object2) : null;
 
-            bool object1IsParent = objectValue1 != null && (objectValue1 == parms.Object1 || parms.Result.Parents.ContainsKey(objectValue1.GetHashCode()));
-            bool object2IsParent = objectValue2 != null && (objectValue2 == parms.Object2 || parms.Result.Parents.ContainsKey(objectValue2.GetHashCode()));
-
-            //Skip fields that point to the parent
-            if ((TypeHelper.IsClass(item.FieldType) || TypeHelper.IsInterface(item.FieldType))
-                && (object1IsParent || object2IsParent))
-            {
-                return;
-            }
-
             string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, item.Name);
 
             CompareParms childParms = new CompareParms
@@ -83,26 +60,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             _rootComparer.Compare(childParms);
         }
 
-        private static FieldInfo GetSecondFieldInfo(CompareParms parms, FieldInfo item)
-        {
-            FieldInfo secondFieldInfo = null;
-            if (parms.Config.IgnoreObjectTypes)
-            {
-                IEnumerable<FieldInfo> secondObjectFieldInfos = Cache.GetFieldInfo(parms.Config, parms.Object2Type);
-
-                foreach (var fieldInfo in secondObjectFieldInfos)
-                {
-                    if (fieldInfo.Name != item.Name) continue;
-
-                    secondFieldInfo = fieldInfo;
-                    break;
-                }
-            }
-            else
-                secondFieldInfo = item;
-
-            return secondFieldInfo;
-        }
 
         private static IEnumerable<FieldInfo> GetCurrentFields(CompareParms parms)
         {
@@ -126,6 +83,46 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             if (currentFields == null)
                 currentFields = Cache.GetFieldInfo(parms.Config, parms.Object1Type);
             return currentFields;
+        }
+
+
+        private static FieldInfo GetSecondFieldInfo(CompareParms parms, FieldInfo item)
+        {
+            FieldInfo secondFieldInfo = null;
+            if (parms.Config.IgnoreObjectTypes)
+            {
+                IEnumerable<FieldInfo> secondObjectFieldInfos = Cache.GetFieldInfo(parms.Config, parms.Object2Type);
+
+                foreach (var fieldInfo in secondObjectFieldInfos)
+                {
+                    if (fieldInfo.Name != item.Name)
+                        continue;
+
+                    secondFieldInfo = fieldInfo;
+                    break;
+                }
+            }
+            else
+                secondFieldInfo = item;
+
+            return secondFieldInfo;
+        }
+
+
+        /// <summary>
+        /// Compare the fields of a class
+        /// </summary>
+        public void PerformCompareFields(CompareParms parms)
+        {
+            var currentFields = GetCurrentFields(parms);
+
+            foreach (FieldInfo item in currentFields)
+            {
+                CompareField(parms, item);
+
+                if (parms.Result.ExceededDifferences)
+                    return;
+            }
         }
     }
 }

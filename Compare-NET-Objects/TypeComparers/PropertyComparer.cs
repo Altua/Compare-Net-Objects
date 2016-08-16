@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
+
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
 {
     /// <summary>
@@ -10,8 +11,9 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
     /// </summary>
     public class PropertyComparer : BaseComparer
     {
-        private readonly RootComparer _rootComparer;
         private readonly IndexerComparer _indexerComparer;
+        private readonly RootComparer _rootComparer;
+
 
         /// <summary>
         /// Constructor that takes a root comparer
@@ -23,21 +25,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             _indexerComparer = new IndexerComparer(rootComparer);
         }
 
-        /// <summary>
-        /// Compare the properties of a class
-        /// </summary>
-        public void PerformCompareProperties(CompareParms parms)
-        {
-            IEnumerable<PropertyInfo> currentProperties = GetCurrentProperties(parms);
-
-            foreach (PropertyInfo info in currentProperties)
-            {
-                CompareProperty(parms, info);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-            }
-        }
 
         /// <summary>
         /// Compare a single property of a class
@@ -82,12 +69,9 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 return;
             }
 
-            bool object1IsParent = objectValue1 != null && (objectValue1 == parms.Object1 || parms.Result.Parents.ContainsKey(objectValue1.GetHashCode()));
-            bool object2IsParent = objectValue2 != null && (objectValue2 == parms.Object2 || parms.Result.Parents.ContainsKey(objectValue2.GetHashCode()));
-
             //Skip properties where both point to the corresponding parent
-            if ((TypeHelper.IsClass(info.PropertyType) || TypeHelper.IsInterface(info.PropertyType) || TypeHelper.IsStruct(info.PropertyType))
-                && (object1IsParent && object2IsParent))
+            if ((TypeHelper.IsClass(info.PropertyType) || TypeHelper.IsInterface(info.PropertyType) ||
+                 TypeHelper.IsStruct(info.PropertyType)))
             {
                 return;
             }
@@ -108,25 +92,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             _rootComparer.Compare(childParms);
         }
 
-        private static PropertyInfo GetSecondObjectInfo(CompareParms parms, PropertyInfo info)
-        {
-            PropertyInfo secondObjectInfo = null;
-            if (parms.Config.IgnoreObjectTypes)
-            {
-                IEnumerable<PropertyInfo> secondObjectPropertyInfos = Cache.GetPropertyInfo(parms.Result, parms.Object2Type);
-
-                foreach (var propertyInfo in secondObjectPropertyInfos)
-                {
-                    if (propertyInfo.Name != info.Name) continue;
-
-                    secondObjectInfo = propertyInfo;
-                    break;
-                }
-            }
-            else
-                secondObjectInfo = info;
-            return secondObjectInfo;
-        }
 
         private static IEnumerable<PropertyInfo> GetCurrentProperties(CompareParms parms)
         {
@@ -151,6 +116,29 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 currentProperties = Cache.GetPropertyInfo(parms.Result, parms.Object1Type);
             return currentProperties;
         }
+
+
+        private static PropertyInfo GetSecondObjectInfo(CompareParms parms, PropertyInfo info)
+        {
+            PropertyInfo secondObjectInfo = null;
+            if (parms.Config.IgnoreObjectTypes)
+            {
+                IEnumerable<PropertyInfo> secondObjectPropertyInfos = Cache.GetPropertyInfo(parms.Result, parms.Object2Type);
+
+                foreach (var propertyInfo in secondObjectPropertyInfos)
+                {
+                    if (propertyInfo.Name != info.Name)
+                        continue;
+
+                    secondObjectInfo = propertyInfo;
+                    break;
+                }
+            }
+            else
+                secondObjectInfo = info;
+            return secondObjectInfo;
+        }
+
 
         private bool IsValidIndexer(ComparisonConfig config, PropertyInfo info, string breadCrumb)
         {
@@ -203,6 +191,23 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             }
 
             return true;
+        }
+
+
+        /// <summary>
+        /// Compare the properties of a class
+        /// </summary>
+        public void PerformCompareProperties(CompareParms parms)
+        {
+            IEnumerable<PropertyInfo> currentProperties = GetCurrentProperties(parms);
+
+            foreach (PropertyInfo info in currentProperties)
+            {
+                CompareProperty(parms, info);
+
+                if (parms.Result.ExceededDifferences)
+                    return;
+            }
         }
     }
 }

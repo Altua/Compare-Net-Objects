@@ -11,10 +11,6 @@ namespace KellermanSoftware.CompareNetObjects
     /// </summary>
     public class RootComparer : BaseComparer
     {
-        private Dictionary<CompareParms, bool> _cache = new Dictionary<CompareParms, bool>();
-        private Dictionary<CompareParms, bool> _cacheInProgress = new Dictionary<CompareParms, bool>();
-
-
         #region Properties
 
         /// <summary>
@@ -36,13 +32,13 @@ namespace KellermanSoftware.CompareNetObjects
             try
             {
                 bool cachedResult = false;
-                if (_cache.TryGetValue(parms, out cachedResult))
+                if (parms.Result.Cache.TryGetValue(parms, out cachedResult))
                     return cachedResult;
 
-                if (_cacheInProgress.ContainsKey(parms))
+                if (parms.Result.CacheInProgress.ContainsKey(parms))
                     return true;
 
-                _cacheInProgress.Add(parms, true);
+                parms.Result.CacheInProgress.Add(parms, true);
 
                 if (parms.Object1 == null && parms.Object2 == null)
                     result = true;
@@ -90,11 +86,10 @@ namespace KellermanSoftware.CompareNetObjects
             }
             finally
             {
-                
             }
 
-            _cache.Add(parms, result);
-            _cacheInProgress.Remove(parms);
+            parms.Result.Cache.Add(parms, result);
+            parms.Result.CacheInProgress.Remove(parms);
             return result;
         }
 
@@ -141,11 +136,5 @@ namespace KellermanSoftware.CompareNetObjects
         }
 
         #endregion
-
-        public void Clean()
-        {
-            _cache.Clear();
-            _cacheInProgress.Clear();
-        }
     }
 }

@@ -194,7 +194,6 @@ namespace KellermanSoftware.CompareNetObjects
             #endif
 
             RootComparer rootComparer = RootComparerFactory.GetRootComparer();
-            rootComparer.Clean();
 
             CompareParms parms = new CompareParms
             {

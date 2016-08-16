@@ -106,30 +106,20 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             if (parms.Object1 == null || parms.Object2 == null)
                 return;
 
-            try
+
+            bool countsDifferent = ListsHaveDifferentCounts(parms);
+
+            if (parms.Result.ExceededDifferences)
+                return;
+
+            if (parms.Config.IgnoreCollectionOrder)
             {
-                parms.Result.AddParent(parms.Object1);
-                parms.Result.AddParent(parms.Object2);
-
-                bool countsDifferent = ListsHaveDifferentCounts(parms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-
-                if (parms.Config.IgnoreCollectionOrder)
-                {
-                    IgnoreOrderLogic ignoreOrderLogic = new IgnoreOrderLogic(RootComparer);
-                    ignoreOrderLogic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
-                }
-                else
-                {
-                    CompareItems(parms);
-                }
+                IgnoreOrderLogic ignoreOrderLogic = new IgnoreOrderLogic(RootComparer);
+                ignoreOrderLogic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
             }
-            finally
+            else
             {
-                parms.Result.RemoveParent(parms.Object1);
-                parms.Result.RemoveParent(parms.Object2);
+                CompareItems(parms);
             }
         }
 

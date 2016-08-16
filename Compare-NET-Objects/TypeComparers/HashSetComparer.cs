@@ -91,36 +91,25 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// </summary>
         public override void CompareType(CompareParms parms)
         {
-            try
+            Type t1 = parms.Object1.GetType();
+            parms.Object1Type = t1;
+
+            Type t2 = parms.Object2.GetType();
+            parms.Object2Type = t2;
+
+            bool countsDifferent = HashSetsDifferentCount(parms);
+
+            if (parms.Result.ExceededDifferences)
+                return;
+
+            if (parms.Config.IgnoreCollectionOrder)
             {
-                parms.Result.AddParent(parms.Object1);
-                parms.Result.AddParent(parms.Object2);
-
-                Type t1 = parms.Object1.GetType();
-                parms.Object1Type = t1;
-
-                Type t2 = parms.Object2.GetType();
-                parms.Object2Type = t2;
-
-                bool countsDifferent = HashSetsDifferentCount(parms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-
-                if (parms.Config.IgnoreCollectionOrder)
-                {
-                    IgnoreOrderLogic logic = new IgnoreOrderLogic(RootComparer);
-                    logic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
-                }
-                else
-                {
-                    CompareItems(parms);
-                }
+                IgnoreOrderLogic logic = new IgnoreOrderLogic(RootComparer);
+                logic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
             }
-            finally
+            else
             {
-                parms.Result.RemoveParent(parms.Object1);
-                parms.Result.RemoveParent(parms.Object2);
+                CompareItems(parms);
             }
         }
 

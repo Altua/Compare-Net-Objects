@@ -52,9 +52,15 @@ namespace KellermanSoftware.CompareNetObjects
         #endif
 
         /// <summary>
-        /// Keep track of parent objects in the object hiearchy
+        /// Cache for results
         /// </summary>
-        internal readonly Dictionary<object, bool> Parents = new Dictionary<object, bool>();
+        public Dictionary<CompareParms, bool> Cache { get; } = new Dictionary<CompareParms, bool>();
+
+
+        /// <summary>
+        /// Cache for keeping track of objects in progress
+        /// </summary>
+        public Dictionary<CompareParms, bool> CacheInProgress { get; } = new Dictionary<CompareParms, bool>();
 
         /// <summary>
         /// The differences found during the compare
@@ -108,28 +114,5 @@ namespace KellermanSoftware.CompareNetObjects
 
         #endregion
 
-
-        #region Methods
-
-        /// <summary>
-        /// Add parent, handle references count
-        /// </summary>
-        /// <param name="parent">The parent object</param>
-        internal void AddParent(object parent)
-        {
-            //Parents.Add(parent, true);
-        }
-
-
-        /// <summary>
-        /// Remove parent, handle references count
-        /// </summary>
-        /// <param name="parent"></param>
-        internal void RemoveParent(object parent)
-        {
-            //Parents.Remove(parent);
-        }
-
-        #endregion
     }
 }

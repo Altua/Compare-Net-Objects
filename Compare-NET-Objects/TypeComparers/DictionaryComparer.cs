@@ -18,55 +18,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
         }
 
-        /// <summary>
-        /// Returns true if both types are dictionaries
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsIDictionary(type1) && TypeHelper.IsIDictionary(type2);
-        }
-
-        /// <summary>
-        /// Compare two dictionaries
-        /// </summary>
-        public override void CompareType(CompareParms parms)
-        {
-            //This should never happen, null check happens one level up
-            if (parms.Object1 == null || parms.Object2 == null)
-                return;
-
-            try
-            {
-                parms.Result.AddParent(parms.Object1);
-                parms.Result.AddParent(parms.Object2);
-
-                //Objects must be the same length
-                bool countsDifferent = DictionaryCountsDifferent(parms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-
-                if (parms.Config.IgnoreCollectionOrder)
-                {
-                    IgnoreOrderLogic logic = new IgnoreOrderLogic(RootComparer);
-                    logic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
-                }
-                else
-                {
-                    CompareEachItem(parms);
-                }
-
-            }
-            finally
-            {
-                parms.Result.RemoveParent(parms.Object1);
-                parms.Result.RemoveParent(parms.Object2);
-            }
-        }
-
         private void CompareEachItem(CompareParms parms)
         {
             var enumerator1 = ((IDictionary) parms.Object1).GetEnumerator();
@@ -143,5 +94,45 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             }
             return false;
         }
+
+
+        /// <summary>
+        /// Compare two dictionaries
+        /// </summary>
+        public override void CompareType(CompareParms parms)
+        {
+            //This should never happen, null check happens one level up
+            if (parms.Object1 == null || parms.Object2 == null)
+                return;
+
+            //Objects must be the same length
+            bool countsDifferent = DictionaryCountsDifferent(parms);
+
+            if (parms.Result.ExceededDifferences)
+                return;
+
+            if (parms.Config.IgnoreCollectionOrder)
+            {
+                IgnoreOrderLogic logic = new IgnoreOrderLogic(RootComparer);
+                logic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
+            }
+            else
+            {
+                CompareEachItem(parms);
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if both types are dictionaries
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsIDictionary(type1) && TypeHelper.IsIDictionary(type2);
+        }
+
     }
 }

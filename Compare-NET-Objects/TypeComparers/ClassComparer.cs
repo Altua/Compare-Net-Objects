@@ -39,42 +39,31 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// </summary>
         public override void CompareType(CompareParms parms)
         {
-            try
+            //Custom classes that implement IEnumerable may have the same hash code
+            //Ignore objects with the same hash code
+            if (!(parms.Object1 is IEnumerable)
+                && ReferenceEquals(parms.Object1, parms.Object2))
             {
-                parms.Result.AddParent(parms.Object1);
-                parms.Result.AddParent(parms.Object2);
-
-                //Custom classes that implement IEnumerable may have the same hash code
-                //Ignore objects with the same hash code
-                if (!(parms.Object1 is IEnumerable)
-                    && ReferenceEquals(parms.Object1, parms.Object2))
-                {
-                    return;
-                }
-
-                Type t1 = parms.Object1.GetType();
-                Type t2 = parms.Object2.GetType();
-
-                //Check if the class type should be excluded based on the configuration
-                if (ExcludeLogic.ShouldExcludeClassType(parms.Config, t1, t2))
-                    return;
-
-                parms.Object1Type = t1;
-                parms.Object2Type = t2;
-
-                //Compare the properties
-                if (parms.Config.CompareProperties)
-                    _propertyComparer.PerformCompareProperties(parms);
-
-                //Compare the fields
-                if (parms.Config.CompareFields)
-                    _fieldComparer.PerformCompareFields(parms);
+                return;
             }
-            finally
-            {
-                parms.Result.RemoveParent(parms.Object1);
-                parms.Result.RemoveParent(parms.Object2);
-            }
+
+            Type t1 = parms.Object1.GetType();
+            Type t2 = parms.Object2.GetType();
+
+            //Check if the class type should be excluded based on the configuration
+            if (ExcludeLogic.ShouldExcludeClassType(parms.Config, t1, t2))
+                return;
+
+            parms.Object1Type = t1;
+            parms.Object2Type = t2;
+
+            //Compare the properties
+            if (parms.Config.CompareProperties)
+                _propertyComparer.PerformCompareProperties(parms);
+
+            //Compare the fields
+            if (parms.Config.CompareFields)
+                _fieldComparer.PerformCompareFields(parms);
         }
     }
 }
