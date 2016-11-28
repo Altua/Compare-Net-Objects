@@ -134,62 +134,7 @@ namespace KellermanSoftware.CompareNetObjects
 
             return message;            
         }
-        /// <summary>
-        /// The type and index of what is compared
-        /// </summary>
-        /// <returns></returns>
-        public string GetWhatIsCompared()
-        {
-            string message;
 
-            if (!String.IsNullOrEmpty(PropertyName))
-            {
-                if (String.IsNullOrEmpty(ChildPropertyName))
-                {
-                    message = String.Format("Types [{3},{4}], Item {0}.{2} != {1}.{2}",
-                        ExpectedName,
-                        ActualName,
-                        PropertyName,
-                        Object1TypeName,
-                        Object2TypeName);
-                }
-                else
-                {
-                    message = String.Format("Types [{4},{5}], Item {0}.{2}.{3} != {1}.{2}.{3}",
-                        ExpectedName,
-                        ActualName,
-                        PropertyName,
-                        ChildPropertyName,
-                        Object1TypeName,
-                        Object2TypeName);
-                }
-            }
-            else if (!String.IsNullOrEmpty(ChildPropertyName))
-            {
-                message = String.Format("Types [{2}.{4},{3}.{4}], Item {0} != {1}",
-                        ExpectedName,
-                        ActualName,
-                        Object1TypeName,
-                        Object2TypeName,
-                        ChildPropertyName);
-            }
-            else
-            {
-                message = String.Format("Types [{2},{3}], Item {0} != {1}",
-                    ExpectedName,
-                    ActualName,
-                    Object1TypeName,
-                    Object2TypeName);
-            }
-
-            if (!String.IsNullOrEmpty(MessagePrefix))
-                message = String.Format("{0}: {1}", MessagePrefix, message);
-
-            message = message.Replace("..", ".");
-            message = message.Replace(".[", "[");
-
-            return message;
-        }
 
         /// <summary>
         /// Nicely formatted string
@@ -197,7 +142,39 @@ namespace KellermanSoftware.CompareNetObjects
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format("{0}, Values ({1},{2})", GetWhatIsCompared(), Object1Value, Object2Value);            
+            string parent1Type = ParentObject1.IsAlive ? $"{ParentObject1.Target.GetType()}." : string.Empty;
+            string parent2Type = ParentObject2.IsAlive ? $"{ParentObject2.Target.GetType()}." : string.Empty;
+
+            string path = string.Empty;
+            if (!string.IsNullOrWhiteSpace(PropertyName))
+                path += $".{PropertyName}";
+
+            if (!string.IsNullOrWhiteSpace(ChildPropertyName))
+                path += $".{ChildPropertyName}";
+
+            string expectedPath = $"{ExpectedName}{path}".Replace("..", ".");
+            string actualPath = $"{ActualName}{path}".Replace("..", ".");
+
+            string message = $@"
+Types:
+    Expected:   {parent1Type}{Object1TypeName}
+    Actual:     {parent2Type}{Object2TypeName}
+Paths:         
+    Expected:   {expectedPath}
+    Actual:     {actualPath}
+Values:
+    Expected:   <{Object1Value}>
+    Actual:     <{Object2Value}>
+";
+
+            if (!string.IsNullOrEmpty(MessagePrefix))
+                message = $"{MessagePrefix}: {message}";
+
+            //message = message.Replace("..", ".");
+            //message = message.Replace(".[", "[");
+
+            return message;
         }
     }
+}
 }
