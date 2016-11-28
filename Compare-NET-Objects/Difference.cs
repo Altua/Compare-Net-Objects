@@ -142,8 +142,8 @@ namespace KellermanSoftware.CompareNetObjects
         /// <returns></returns>
         public override string ToString()
         {
-            string parent1Type = ParentObject1.IsAlive ? $"{ParentObject1.Target.GetType()}." : string.Empty;
-            string parent2Type = ParentObject2.IsAlive ? $"{ParentObject2.Target.GetType()}." : string.Empty;
+            string parent1Type = ParentObject1.IsAlive ? ParentObject1.Target.GetType().ToString() : string.Empty;
+            string parent2Type = ParentObject2.IsAlive ? ParentObject2.Target.GetType().ToString() : string.Empty;
 
             string path = string.Empty;
             if (!string.IsNullOrWhiteSpace(PropertyName))
@@ -157,14 +157,14 @@ namespace KellermanSoftware.CompareNetObjects
 
             string message = $@"
 Types:
-    Expected:   {parent1Type}{Object1TypeName}
-    Actual:     {parent2Type}{Object2TypeName}
+    Expected:   {parent1Type}
+    Actual:     {parent2Type}
 Paths:         
     Expected:   {expectedPath}
     Actual:     {actualPath}
 Values:
-    Expected:   <{Object1Value}>
-    Actual:     <{Object2Value}>
+    Expected:   {Object1TypeName} <{Object1Value}>
+    Actual:     {Object2TypeName} <{Object2Value}>
 ";
 
             if (!string.IsNullOrEmpty(MessagePrefix))
@@ -176,5 +176,4 @@ Values:
             return message;
         }
     }
-}
 }
