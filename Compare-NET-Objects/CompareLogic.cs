@@ -201,7 +201,7 @@ namespace KellermanSoftware.CompareNetObjects
                 Result = result,
                 Object1 = object1,
                 Object2 = object2,
-                BreadCrumb = string.Empty
+                BreadCrumb = object1?.GetType().ToString() ?? object2?.GetType().ToString() ?? string.Empty
             };
 
             rootComparer.Compare(parms);

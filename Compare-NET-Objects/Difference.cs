@@ -142,26 +142,13 @@ namespace KellermanSoftware.CompareNetObjects
         /// <returns></returns>
         public override string ToString()
         {
-            string parent1Type = ParentObject1.IsAlive ? ParentObject1.Target.GetType().ToString() : string.Empty;
-            string parent2Type = ParentObject2.IsAlive ? ParentObject2.Target.GetType().ToString() : string.Empty;
-
-            string path = string.Empty;
-            if (!string.IsNullOrWhiteSpace(PropertyName))
-                path += $".{PropertyName}";
-
-            if (!string.IsNullOrWhiteSpace(ChildPropertyName))
-                path += $".{ChildPropertyName}";
-
-            string expectedPath = $"{ExpectedName}{path}".Replace("..", ".");
-            string actualPath = $"{ActualName}{path}".Replace("..", ".");
+            string type = ParentObject1.IsAlive ? ParentObject1.Target.GetType().ToString() : string.Empty;
+            string path = string.Join(".", PropertyName, ChildPropertyName).Replace("..", ".").Replace(".[", "[");
 
             string message = $@"
-Types:
-    Expected:   {parent1Type}
-    Actual:     {parent2Type}
-Paths:         
-    Expected:   {expectedPath}
-    Actual:     {actualPath}
+Location:
+    Type:       {type}
+    Path:       {path}
 Values:
     Expected:   {Object1TypeName} <{Object1Value}>
     Actual:     {Object2TypeName} <{Object2Value}>
@@ -169,9 +156,6 @@ Values:
 
             if (!string.IsNullOrEmpty(MessagePrefix))
                 message = $"{MessagePrefix}: {message}";
-
-            //message = message.Replace("..", ".");
-            //message = message.Replace(".[", "[");
 
             return message;
         }
