@@ -80,7 +80,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                         PropertyName = keyBreadCrumb,
                         Object1Value = key.ToString(),
                         Object2Value = "",
-                        ChildPropertyName = "Key",
                         Object1 = new WeakReference(key),
                         Object2 = null,
                     };
@@ -111,16 +110,14 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
         private static bool TryGetValue(IDictionary dictionary, object key, out object value)
         {
-            try
+            if (dictionary.Contains(key))
             {
                 value = dictionary[key];
                 return true;
             }
-            catch
-            {
-                value = null;
-                return false;
-            }
+
+            value = null;
+            return false;
         }
 
 
