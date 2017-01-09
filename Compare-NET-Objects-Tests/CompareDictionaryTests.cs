@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using KellermanSoftware.CompareNetObjects;
 using KellermanSoftware.CompareNetObjectsTests.TestClasses;
 using NUnit.Framework;
@@ -100,6 +101,66 @@ namespace KellermanSoftware.CompareNetObjectsTests
 
             Assert.IsFalse(_compare.Compare(dict1, dict2).AreEqual);
 
+        }
+
+
+
+
+
+        [Test]
+        public void Dictionary_CompareToDictionaryWithOtherOrder_ReturnsTrue()
+        {
+            DictionaryKey key1 = new DictionaryKey(1);
+            DictionaryKey key2 = new DictionaryKey(2);
+            Dictionary<DictionaryKey, string> dict1 = new Dictionary<DictionaryKey, string>();
+            dict1.Add(key1, "value1");
+            dict1.Add(key2, "value2");
+            // Added in the opposite order
+            Dictionary<DictionaryKey, string> dict2 = new Dictionary<DictionaryKey, string>();
+            dict2.Add(key2, "value2");
+            dict2.Add(key1, "value1");
+
+            ComparisonResult comparisonResult = _compare.Compare(dict1, dict2);
+            bool areEqual = comparisonResult.AreEqual;
+            Assert.IsTrue(areEqual);
+        }
+
+
+        private sealed class DictionaryKey
+        {
+            private readonly int _equality;
+
+
+            public DictionaryKey(int equality)
+            {
+                _equality = equality;
+            }
+
+
+            private bool Equals(DictionaryKey other)
+            {
+                return _equality == other._equality;
+            }
+
+
+            /// <summary>Determines whether the specified object is equal to the current object.</summary>
+            /// <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+            /// <param name="obj">The object to compare with the current object. </param>
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj))
+                    return false;
+                if (ReferenceEquals(this, obj))
+                    return true;
+                return obj is DictionaryKey && Equals((DictionaryKey) obj);
+            }
+
+
+            public override int GetHashCode()
+            {
+                // NOTE: We always return the same hash code to force the same buckets for the dictionary
+                return 0;
+            }
         }
         #endregion
     }

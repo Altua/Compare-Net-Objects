@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright Altua AS. All rights reserved.
+
+using System;
 using System.Collections;
 using System.Globalization;
-using KellermanSoftware.CompareNetObjects.IgnoreOrderTypes;
+
 
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
 {
@@ -18,52 +20,8 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
         }
 
-        private void CompareEachItem(CompareParms parms)
-        {
-            var enumerator1 = ((IDictionary) parms.Object1).GetEnumerator();
-            var enumerator2 = ((IDictionary) parms.Object2).GetEnumerator();
 
-            while (enumerator1.MoveNext() && enumerator2.MoveNext())
-            {
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Key");
-
-                CompareParms childParms = new CompareParms
-                {
-                    Result = parms.Result,
-                    Config = parms.Config,
-                    ParentObject1 = parms.Object1,
-                    ParentObject2 = parms.Object2,
-                    Object1 = enumerator1.Key,
-                    Object2 = enumerator2.Key,
-                    BreadCrumb = currentBreadCrumb
-                };
-
-                RootComparer.Compare(childParms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-
-                currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Value");
-
-                childParms = new CompareParms
-                {
-                    Result = parms.Result,
-                    Config = parms.Config,
-                    ParentObject1 = parms.Object1,
-                    ParentObject2 = parms.Object2,
-                    Object1 = enumerator1.Value,
-                    Object2 = enumerator2.Value,
-                    BreadCrumb = currentBreadCrumb
-                };
-
-                RootComparer.Compare(childParms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-            }
-        }
-
-        private bool DictionaryCountsDifferent(CompareParms parms)
+        private bool CheckIfDictionaryCountIsDifferent(CompareParms parms)
         {
             IDictionary iDict1 = parms.Object1 as IDictionary;
             IDictionary iDict2 = parms.Object2 as IDictionary;
@@ -77,22 +35,92 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             if (iDict1.Count != iDict2.Count)
             {
                 Difference difference = new Difference
-                                            {
-                                                ParentObject1 = new WeakReference(parms.ParentObject1),
-                                                ParentObject2 = new WeakReference(parms.ParentObject2),
-                                                PropertyName = parms.BreadCrumb,
-                                                Object1Value = iDict1.Count.ToString(CultureInfo.InvariantCulture),
-                                                Object2Value = iDict2.Count.ToString(CultureInfo.InvariantCulture),
-                                                ChildPropertyName = "Count",
-                                                Object1 = new WeakReference(iDict1),
-                                                Object2 = new WeakReference(iDict2)
-                                            };
+                {
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb,
+                    Object1Value = iDict1.Count.ToString(CultureInfo.InvariantCulture),
+                    Object2Value = iDict2.Count.ToString(CultureInfo.InvariantCulture),
+                    ChildPropertyName = "Count",
+                    Object1 = new WeakReference(iDict1),
+                    Object2 = new WeakReference(iDict2)
+                };
 
                 AddDifference(parms.Result, difference);
 
                 return true;
             }
             return false;
+        }
+
+
+        private void CompareEachItem(CompareParms parms)
+        {
+            IDictionary dict1 = (IDictionary) parms.Object1;
+            IDictionary dict2 = (IDictionary) parms.Object2;
+
+            string keyBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Key");
+            string valueBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Value");
+
+            // Note: We currently just check this one way. A further optimization could be to run
+            // the comparison in the other direction as well. We will never get a false negative, since
+            // since we have already checked the count, but if the user has allowed more than one difference
+            // not all differences will be shown in a single run.
+            foreach (object key in dict1.Keys)
+            {
+                object value1 = dict1[key];
+                object value2;
+
+                if (!TryGetValue(dict2, key, out value2))
+                {
+                    Difference difference = new Difference
+                    {
+                        ParentObject1 = new WeakReference(parms.ParentObject1),
+                        ParentObject2 = new WeakReference(parms.ParentObject2),
+                        PropertyName = keyBreadCrumb,
+                        Object1Value = key.ToString(),
+                        Object2Value = "",
+                        ChildPropertyName = "Key",
+                        Object1 = new WeakReference(key),
+                        Object2 = null,
+                    };
+
+                    AddDifference(parms.Result, difference);
+                }
+                else
+                {
+                    CompareParms childParms = new CompareParms
+                    {
+                        Result = parms.Result,
+                        Config = parms.Config,
+                        ParentObject1 = parms.Object1,
+                        ParentObject2 = parms.Object2,
+                        Object1 = value1,
+                        Object2 = value2,
+                        BreadCrumb = valueBreadCrumb
+                    };
+
+                    RootComparer.Compare(childParms);
+                }
+
+                if (parms.Result.ExceededDifferences)
+                    return;
+            }
+        }
+
+
+        private static bool TryGetValue(IDictionary dictionary, object key, out object value)
+        {
+            try
+            {
+                value = dictionary[key];
+                return true;
+            }
+            catch
+            {
+                value = null;
+                return false;
+            }
         }
 
 
@@ -105,21 +133,13 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             if (parms.Object1 == null || parms.Object2 == null)
                 return;
 
-            //Objects must be the same length
-            bool countsDifferent = DictionaryCountsDifferent(parms);
+            // Objects must be the same length
+            CheckIfDictionaryCountIsDifferent(parms);
 
             if (parms.Result.ExceededDifferences)
                 return;
 
-            if (parms.Config.IgnoreCollectionOrder)
-            {
-                IgnoreOrderLogic logic = new IgnoreOrderLogic(RootComparer);
-                logic.CompareEnumeratorIgnoreOrder(parms, countsDifferent);
-            }
-            else
-            {
-                CompareEachItem(parms);
-            }
+            CompareEachItem(parms);
         }
 
 
@@ -133,6 +153,5 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
             return TypeHelper.IsIDictionary(type1) && TypeHelper.IsIDictionary(type2);
         }
-
     }
 }
