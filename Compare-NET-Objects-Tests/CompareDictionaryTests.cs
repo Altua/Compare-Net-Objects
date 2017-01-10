@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using KellermanSoftware.CompareNetObjects;
 using KellermanSoftware.CompareNetObjectsTests.TestClasses;
 using NUnit.Framework;
@@ -40,7 +41,10 @@ namespace KellermanSoftware.CompareNetObjectsTests
         [SetUp]
         public void Initialize()
         {
-            _compare = new CompareLogic();
+            _compare = new CompareLogic
+            {
+                Config = {ComparePrivateFields = true}
+            };
         }
 
         /// <summary>
@@ -104,9 +108,6 @@ namespace KellermanSoftware.CompareNetObjectsTests
         }
 
 
-
-
-
         [Test]
         public void Dictionary_CompareToDictionaryWithOtherOrder_ReturnsTrue()
         {
@@ -123,6 +124,70 @@ namespace KellermanSoftware.CompareNetObjectsTests
             ComparisonResult comparisonResult = _compare.Compare(dict1, dict2);
             bool areEqual = comparisonResult.AreEqual;
             Assert.IsTrue(areEqual);
+        }
+
+
+        [Test]
+        public void Dictionary_CompareToDictionaryWithNonMatchingValues_ReturnsFalse()
+        {
+            DictionaryKey key1 = new DictionaryKey(1);
+            DictionaryKey key2 = new DictionaryKey(2);
+            Dictionary<DictionaryKey, string> dict1 = new Dictionary<DictionaryKey, string>();
+            dict1.Add(key1, "value1");
+            dict1.Add(key2, "value2");
+            // Added in the opposite order
+            Dictionary<DictionaryKey, string> dict2 = new Dictionary<DictionaryKey, string>();
+            dict2.Add(key2, "value3"); // <-- NON MATCHING !!
+            dict2.Add(key1, "value1");
+
+            ComparisonResult comparisonResult = _compare.Compare(dict1, dict2);
+            bool areEqual = comparisonResult.AreEqual;
+            Assert.IsFalse(areEqual);
+        }
+
+
+        [Test]
+        public void Dictionary_CompareToLargeDictionaryWithOtherOrder_ReturnsTrue()
+        {
+            int itemCount = 25;
+            Dictionary<DictionaryKey, int> dictionary = new Dictionary<DictionaryKey, int>();
+            Dictionary<DictionaryKey, int> dictionaryReversed = new Dictionary<DictionaryKey, int>();
+            for (int i = 0; i < itemCount; i++)
+            {
+                dictionary.Add(new DictionaryKey(i), i);
+            }
+            foreach (var kvp in dictionary.Reverse())
+            {
+                dictionaryReversed.Add(kvp.Key, kvp.Value);
+            }          
+
+            ComparisonResult comparisonResult = _compare.Compare(dictionary, dictionaryReversed);
+
+            bool result = comparisonResult.AreEqual;
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void Dictionary_CompareToLargeDictionaryWithOtherOrderAndItems_ReturnsFalse()
+        {
+            int itemCount = 25;
+            Dictionary<DictionaryKey, int> dictionary = new Dictionary<DictionaryKey, int>();
+            Dictionary<DictionaryKey, int> dictionaryReversed = new Dictionary<DictionaryKey, int>();
+            for (int i = 0; i < itemCount; i++)
+            {
+                dictionary.Add(new DictionaryKey(i), i);
+            }
+            foreach (var kvp in dictionary.Reverse())
+            {
+                dictionaryReversed.Add(kvp.Key, kvp.Value);
+            }
+            dictionary.Add(new DictionaryKey(1000), 1000);
+            dictionaryReversed.Add(new DictionaryKey(5444), 5444);
+
+            ComparisonResult comparisonResult = _compare.Compare(dictionary, dictionaryReversed);
+
+            bool result = comparisonResult.AreEqual;
+            Assert.IsFalse(result);
         }
 
 
