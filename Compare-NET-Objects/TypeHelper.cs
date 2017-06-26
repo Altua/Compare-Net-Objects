@@ -214,6 +214,16 @@ namespace KellermanSoftware.CompareNetObjects
         {
             if (type == null)
                 return false;
+
+            // Fix to handle IEnumerable properties - JKB
+            if (
+                type.CustomAttributes.Any(x => x.AttributeType == typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute))
+                && type.GetInterfaces().Any(inter => inter.GetTypeInfo().IsGenericType && inter.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                )
+            {
+                return true;
+            }
+
 #if !NEWPCL
             var toCheck = type.ReflectedType;
 #else
