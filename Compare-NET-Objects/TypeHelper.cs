@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Reflection;
 
 #if !PORTABLE && !NEWPCL
 using System.Data;
 using System.Drawing;
+using System.Linq;
+using System.Net;
+using System.Reflection;
 #endif
 
 namespace KellermanSoftware.CompareNetObjects
@@ -17,26 +18,6 @@ namespace KellermanSoftware.CompareNetObjects
     /// </summary>
     public static class TypeHelper
     {
-        /// <summary>
-        /// Returns true if it is a byte array
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsByteArray(Type type)
-        {
-            if (!IsIList(type))
-                return false;
-
-#if !NEWPCL
-            var fullName = type.UnderlyingSystemType.FullName;
-#else
-            var fullName = type.FullName;
-#endif
-            if (fullName.Contains("System.Byte"))
-                return true;
-
-            return false;
-        }
 
         /// <summary>
         /// Returns true if the type can have children
@@ -71,33 +52,25 @@ namespace KellermanSoftware.CompareNetObjects
 
             return type.IsArray;
         }
-
-
-
         /// <summary>
-        /// Returns true if it is a struct
+        /// Returns true if it is a byte array
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsStruct(Type type)
+        public static bool IsByteArray(Type type)
         {
-            if (type == null)
+            if (!IsIList(type))
                 return false;
 
-            return type.GetTypeInfo().IsValueType && !IsSimpleType(type);
-        }
+#if !NEWPCL
+            var fullName = type.UnderlyingSystemType.FullName;
+#else
+            var fullName = type.FullName;
+#endif
+            if (fullName.Contains("System.Byte"))
+                return true;
 
-        /// <summary>
-        /// Returns true if the type is a timespan
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsTimespan(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return type == typeof(TimeSpan);
+            return false;
         }
 
         /// <summary>
@@ -114,95 +87,41 @@ namespace KellermanSoftware.CompareNetObjects
         }
 
         /// <summary>
-        /// Return true if the type is an interface
+        /// Return true if the type is a DateTimeOffset
         /// </summary>
         /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsInterface(Type type)
+        public static bool IsDateTimeOffset(Type type)
         {
             if (type == null)
                 return false;
 
-            return type.GetTypeInfo().IsInterface;
+            return type == typeof(DateTimeOffset);
         }
 
         /// <summary>
-        /// Return true if the type is a URI
+        /// Return true if the type is a DateTime
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsUri(Type type)
+        public static bool IsDateTime(Type type)
         {
             if (type == null)
                 return false;
 
-            return (typeof(Uri).IsAssignableFrom(type));
+            return type == typeof(DateTime);
         }
 
         /// <summary>
-        /// Return true if the type is a pointer
+        /// Return true if the type is a Double
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsPointer(Type type)
+        public static bool IsDouble(Type type)
         {
             if (type == null)
                 return false;
 
-            return type == typeof(IntPtr) || type == typeof(UIntPtr);
-        }
-
-        /// <summary>
-        /// Return true if the type is an enum
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsEnum(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return type.GetTypeInfo().IsEnum;
-        }
-
-        /// <summary>
-        /// Return true if the type is a dictionary
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsIDictionary(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return (typeof(IDictionary).IsAssignableFrom(type));
-        }
-
-        /// <summary>
-        /// Return true if the type is a hashset
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsHashSet(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return type.GetTypeInfo().IsGenericType
-                && type.GetTypeInfo().GetGenericTypeDefinition() == typeof(HashSet<>);
-        }
-
-        /// <summary>
-        /// Return true if the type is a List
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static bool IsIList(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return (typeof(IList).IsAssignableFrom(type));
+            return type == typeof(Double);
         }
 
         /// <summary>
@@ -233,54 +152,100 @@ namespace KellermanSoftware.CompareNetObjects
         }
 
         /// <summary>
-        /// Return true if the type is a Double
+        /// Return true if the type is an enum
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsDouble(Type type)
+        public static bool IsEnum(Type type)
         {
             if (type == null)
                 return false;
 
-            return type == typeof(Double);
+            return type.GetTypeInfo().IsEnum;
         }
 
         /// <summary>
-        /// Return true if the type is a DateTime
+        /// Return true if the type is a hashset
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsDateTime(Type type)
+        public static bool IsHashSet(Type type)
         {
             if (type == null)
                 return false;
 
-            return type == typeof (DateTime);
+            return type.GetTypeInfo().IsGenericType
+                && type.GetTypeInfo().GetGenericTypeDefinition() == typeof(HashSet<>);
         }
 
         /// <summary>
-        /// Return true if the type is a DateTimeOffset
-        /// </summary>
-        /// <param name="type"></param>
-        public static bool IsDateTimeOffset(Type type)
-        {
-            if (type == null)
-                return false;
-
-            return type == typeof(DateTimeOffset);
-        }
-
-        /// <summary>
-        /// Return true if the type is a string
+        /// Return true if the type is a dictionary
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsString(Type type)
+        public static bool IsIDictionary(Type type)
+        {
+            if (type == typeof(ConcurrentDictionary<,>))
+            {
+
+            }
+
+            if (type == null)
+                return false;
+
+            return (typeof(IDictionary).IsAssignableFrom(type));
+        }
+
+        /// <summary>
+        /// Return true if the type is a List
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsIList(Type type)
         {
             if (type == null)
                 return false;
 
-            return type == typeof(string);
+            return (typeof(IList).IsAssignableFrom(type));
+        }
+
+        /// <summary>
+        /// Return true if the type is an interface
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsInterface(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return type.GetTypeInfo().IsInterface;
+        }
+
+        /// <summary>
+        /// Return true if the type is a pointer
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsPointer(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return type == typeof(IntPtr) || type == typeof(UIntPtr);
+        }
+
+        /// <summary>
+        /// Returns true if the Type is a Runtime type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsRuntimeType(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return (typeof(Type).IsAssignableFrom(type));
         }
 
         /// <summary>
@@ -307,16 +272,57 @@ namespace KellermanSoftware.CompareNetObjects
         }
 
         /// <summary>
-        /// Returns true if the Type is a Runtime type
+        /// Return true if the type is a string
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsRuntimeType(Type type)
+        public static bool IsString(Type type)
         {
             if (type == null)
                 return false;
 
-            return (typeof(Type).IsAssignableFrom(type));
+            return type == typeof(string);
+        }
+
+
+
+        /// <summary>
+        /// Returns true if it is a struct
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsStruct(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return type.GetTypeInfo().IsValueType && !IsSimpleType(type);
+        }
+
+        /// <summary>
+        /// Returns true if the type is a timespan
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsTimespan(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return type == typeof(TimeSpan);
+        }
+
+        /// <summary>
+        /// Return true if the type is a URI
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsUri(Type type)
+        {
+            if (type == null)
+                return false;
+
+            return (typeof(Uri).IsAssignableFrom(type));
         }
 
 #if !PORTABLE && !NEWPCL

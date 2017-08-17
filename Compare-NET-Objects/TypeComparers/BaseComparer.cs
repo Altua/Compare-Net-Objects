@@ -55,7 +55,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
             if (name == null)
                 throw new ArgumentNullException("name");
-            
+
             bool useName = name.Length > 0;
             StringBuilder sb = new StringBuilder();
 
@@ -103,7 +103,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 Object2 = new WeakReference(parameters.Object2)
             };
 
-            AddDifference(parameters.Result,difference);
+            AddDifference(parameters.Result, difference);
         }
 
         /// <summary>
@@ -122,14 +122,13 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             difference.ActualName = result.Config.ActualName;
             difference.ExpectedName = result.Config.ExpectedName;
 
-            difference.Object1TypeName = difference.Object1 != null && difference.Object1.Target != null 
+            difference.Object1TypeName = difference.Object1 != null && difference.Object1.Target != null
                 ? difference.Object1.Target.GetType().Name : "null";
 
-            difference.Object2TypeName = difference.Object2 != null && difference.Object2.Target != null 
-                ? difference.Object2.Target.GetType().Name : "null";    
+            difference.Object2TypeName = difference.Object2 != null && difference.Object2.Target != null
+                ? difference.Object2.Target.GetType().Name : "null";
 
-            result.Differences.Add(difference);
-            result.Config.DifferenceCallback(difference);
+            throw new DifferenceException(difference);
         }
 
 
@@ -146,10 +145,10 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 if (value == null)
                     return "(null)";
 
-                #if !PORTABLE && !NEWPCL
-                    if (value == DBNull.Value)
-                        return "System.DBNull.Value";
-                #endif
+#if !PORTABLE && !NEWPCL
+                if (value == DBNull.Value)
+                    return "System.DBNull.Value";
+#endif
 
                 return value.ToString();
             }
