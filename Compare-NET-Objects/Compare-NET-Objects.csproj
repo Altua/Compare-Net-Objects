@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BreadCrumb.cs" />
     <Compile Include="Cache.cs" />
     <Compile Include="CompareParms.cs" />
     <Compile Include="DifferenceException.cs" />

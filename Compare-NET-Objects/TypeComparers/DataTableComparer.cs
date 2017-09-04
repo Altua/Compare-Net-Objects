@@ -9,7 +9,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
     /// Compare all rows in a data table
     /// </summary>
     public class DataTableComparer : BaseTypeComparer
-    {      
+    {
         /// <summary>
         /// Constructor that takes a root comparer
         /// </summary>
@@ -19,15 +19,70 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
         }
 
-        /// <summary>
-        /// Returns true if both objects are of type DataTable
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
+        private bool ColumnCountsDifferent(CompareParms parms)
         {
-            return TypeHelper.IsDataTable(type1) && TypeHelper.IsDataTable(type2);
+            DataTable dataTable1 = parms.Object1 as DataTable;
+            DataTable dataTable2 = parms.Object2 as DataTable;
+
+            if (dataTable1 == null)
+                throw new ArgumentException("parms.Object1");
+
+            if (dataTable2 == null)
+                throw new ArgumentException("parms.Object2");
+
+            if (dataTable1.Columns.Count != dataTable2.Columns.Count)
+            {
+                Difference difference = new Difference
+                {
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb.ToString(),
+                    Object1Value = dataTable1.Columns.Count.ToString(CultureInfo.InvariantCulture),
+                    Object2Value = dataTable2.Columns.Count.ToString(CultureInfo.InvariantCulture),
+                    ChildPropertyName = "Columns.Count",
+                    Object1 = new WeakReference(parms.Object1),
+                    Object2 = new WeakReference(parms.Object2)
+                };
+
+                AddDifference(parms.Result, difference);
+
+                if (parms.Result.ExceededDifferences)
+                    return true;
+            }
+            return false;
+        }
+
+        private void CompareEachRow(CompareParms parms)
+        {
+            DataTable dataTable1 = parms.Object1 as DataTable;
+            DataTable dataTable2 = parms.Object2 as DataTable;
+
+            if (dataTable1 == null)
+                throw new ArgumentException("parms.Object1");
+
+            if (dataTable2 == null)
+                throw new ArgumentException("parms.Object2");
+
+            for (int i = 0; i < Math.Min(dataTable1.Rows.Count, dataTable2.Rows.Count); i++)
+            {
+                var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Rows", string.Empty, i);
+
+                CompareParms childParms = new CompareParms
+                {
+                    Result = parms.Result,
+                    Config = parms.Config,
+                    ParentObject1 = parms.Object1,
+                    ParentObject2 = parms.Object2,
+                    Object1 = dataTable1.Rows[i],
+                    Object2 = dataTable2.Rows[i],
+                    BreadCrumb = currentBreadCrumb
+                };
+
+                RootComparer.Compare(childParms);
+
+                if (parms.Result.ExceededDifferences)
+                    return;
+            }
         }
 
         /// <summary>
@@ -57,7 +112,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 {
                     ParentObject1 = new WeakReference(parms.ParentObject1),
                     ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = dataTable1.Rows.Count.ToString(CultureInfo.InvariantCulture),
                     Object2Value = dataTable2.Rows.Count.ToString(CultureInfo.InvariantCulture),
                     ChildPropertyName = "Rows.Count",
@@ -76,70 +131,15 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             CompareEachRow(parms);
         }
 
-        private bool ColumnCountsDifferent(CompareParms parms)
+        /// <summary>
+        /// Returns true if both objects are of type DataTable
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
         {
-            DataTable dataTable1 = parms.Object1 as DataTable;
-            DataTable dataTable2 = parms.Object2 as DataTable;
-
-            if (dataTable1 == null)
-                throw new ArgumentException("parms.Object1");
-
-            if (dataTable2 == null)
-                throw new ArgumentException("parms.Object2");
-
-            if (dataTable1.Columns.Count != dataTable2.Columns.Count)
-            {
-                Difference difference = new Difference
-                {
-                    ParentObject1 = new WeakReference(parms.ParentObject1),
-                    ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
-                    Object1Value = dataTable1.Columns.Count.ToString(CultureInfo.InvariantCulture),
-                    Object2Value = dataTable2.Columns.Count.ToString(CultureInfo.InvariantCulture),
-                    ChildPropertyName = "Columns.Count",
-                    Object1 = new WeakReference(parms.Object1),
-                    Object2 = new WeakReference(parms.Object2)
-                };
-
-                AddDifference(parms.Result, difference);
-
-                if (parms.Result.ExceededDifferences)
-                    return true;
-            }
-            return false;
-        }
-
-        private void CompareEachRow(CompareParms parms)
-        {
-            DataTable dataTable1 = parms.Object1 as DataTable;
-            DataTable dataTable2 = parms.Object2 as DataTable;
-
-            if (dataTable1 == null)
-                throw new ArgumentException("parms.Object1");
-
-            if (dataTable2 == null)
-                throw new ArgumentException("parms.Object2");
-
-            for (int i = 0; i < Math.Min(dataTable1.Rows.Count, dataTable2.Rows.Count); i++)
-            {
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, "Rows", string.Empty, i);
-
-                CompareParms childParms = new CompareParms
-                {
-                    Result = parms.Result,
-                    Config = parms.Config,
-                    ParentObject1 = parms.Object1,
-                    ParentObject2 = parms.Object2,
-                    Object1 = dataTable1.Rows[i],
-                    Object2 = dataTable2.Rows[i],
-                    BreadCrumb = currentBreadCrumb
-                };
-
-                RootComparer.Compare(childParms);
-
-                if (parms.Result.ExceededDifferences)
-                    return;
-            }
+            return TypeHelper.IsDataTable(type1) && TypeHelper.IsDataTable(type2);
         }
 
 

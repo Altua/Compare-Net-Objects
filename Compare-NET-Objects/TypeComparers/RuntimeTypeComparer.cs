@@ -5,7 +5,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
     /// <summary>
     /// Logic to compare two runtime types
     /// </summary>
-    public class RuntimeTypeComparer : BaseTypeComparer 
+    public class RuntimeTypeComparer : BaseTypeComparer
     {
         /// <summary>
         /// Constructor that takes a root comparer
@@ -13,19 +13,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// <param name="rootComparer"></param>
         public RuntimeTypeComparer(RootComparer rootComparer)
             : base(rootComparer)
-        {}
-
-
-        /// <summary>
-        /// Returns true if both types are of type runtme type
-        /// </summary>
-        /// <param name="type1"></param>
-        /// <param name="type2"></param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsRuntimeType(type1) && TypeHelper.IsRuntimeType(type2);
-        }
+        { }
 
         /// <summary>
         /// Compare two runtime types
@@ -39,9 +27,9 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             {
                 Difference difference = new Difference
                 {
-                    ParentObject1 =  new WeakReference(parms.ParentObject1),
-                    ParentObject2 =  new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = t1.FullName,
                     Object2Value = t2.FullName,
                     ChildPropertyName = "FullName",
@@ -51,6 +39,18 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
                 AddDifference(parms.Result, difference);
             }
+        }
+
+
+        /// <summary>
+        /// Returns true if both types are of type runtme type
+        /// </summary>
+        /// <param name="type1"></param>
+        /// <param name="type2"></param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsRuntimeType(type1) && TypeHelper.IsRuntimeType(type2);
         }
     }
 }

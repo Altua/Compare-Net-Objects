@@ -18,17 +18,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         }
 
         /// <summary>
-        /// Returns true if both objects are timespans
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsTimespan(type1) && TypeHelper.IsTimespan(type2);
-        }
-
-        /// <summary>
         /// Compare two timespans
         /// </summary>
         public override void CompareType(CompareParms parms)
@@ -37,9 +26,9 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             {
                 Difference difference = new Difference
                 {
-                    ParentObject1 =  new WeakReference(parms.ParentObject1),
-                    ParentObject2 =  new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = ((TimeSpan)parms.Object1).Ticks.ToString(CultureInfo.InvariantCulture),
                     Object2Value = ((TimeSpan)parms.Object2).Ticks.ToString(CultureInfo.InvariantCulture),
                     ChildPropertyName = "Ticks",
@@ -49,6 +38,17 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
                 AddDifference(parms.Result, difference);
             }
+        }
+
+        /// <summary>
+        /// Returns true if both objects are timespans
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsTimespan(type1) && TypeHelper.IsTimespan(type2);
         }
     }
 }

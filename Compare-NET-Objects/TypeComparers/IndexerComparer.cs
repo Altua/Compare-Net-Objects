@@ -21,6 +21,44 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             _rootComparer = rootComparer;
         }
 
+        private bool IndexersHaveDifferentLength(CompareParms parms, PropertyInfo info)
+        {
+            if (info == null)
+                throw new ArgumentNullException("info");
+
+#if !NEWPCL
+            var type = info.ReflectedType;
+#else
+            var type = info.DeclaringType;
+#endif
+            if (type == null)
+                throw new ArgumentNullException("info");
+
+            int indexerCount1 = (int)type.GetProperty("Count").GetGetMethod().Invoke(parms.Object1, new object[] { });
+            int indexerCount2 = (int)type.GetProperty("Count").GetGetMethod().Invoke(parms.Object2, new object[] { });
+
+            if (indexerCount1 != indexerCount2)
+            {
+                var currentCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, info.Name);
+                Difference difference = new Difference
+                {
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = currentCrumb.ToString(),
+                    Object1Value = indexerCount1.ToString(CultureInfo.InvariantCulture),
+                    Object2Value = indexerCount2.ToString(CultureInfo.InvariantCulture),
+                    ChildPropertyName = "Count",
+                    Object1 = new WeakReference(parms.Object1),
+                    Object2 = new WeakReference(parms.Object2)
+                };
+
+                AddDifference(parms.Result, difference);
+
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// Compare an integer indexer
         /// </summary>
@@ -65,7 +103,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             }
             else
             {
-                string currentCrumb;
+                BreadCrumb currentCrumb;
 
                 // Run on indexer
                 for (int i = 0; i < indexerCount1; i++)
@@ -119,44 +157,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                     }
                 }
             }
-        }
-
-        private bool IndexersHaveDifferentLength(CompareParms parms, PropertyInfo info)
-        {
-            if (info == null)
-                throw new ArgumentNullException("info");
-
-#if !NEWPCL
-            var type = info.ReflectedType;
-#else
-            var type = info.DeclaringType;
-#endif
-            if (type == null)
-                throw new ArgumentNullException("info");
-
-            int indexerCount1 = (int)type.GetProperty("Count").GetGetMethod().Invoke(parms.Object1, new object[] { });
-            int indexerCount2 = (int)type.GetProperty("Count").GetGetMethod().Invoke(parms.Object2, new object[] { });
-
-            if (indexerCount1 != indexerCount2)
-            {
-                string currentCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, info.Name);
-                Difference difference = new Difference
-                                            {
-                                                ParentObject1 = new WeakReference(parms.ParentObject1),
-                                                ParentObject2 = new WeakReference(parms.ParentObject2),
-                                                PropertyName = currentCrumb,
-                                                Object1Value = indexerCount1.ToString(CultureInfo.InvariantCulture),
-                                                Object2Value = indexerCount2.ToString(CultureInfo.InvariantCulture),
-                                                ChildPropertyName = "Count",
-                                                Object1 = new WeakReference(parms.Object1),
-                                                Object2 = new WeakReference(parms.Object2)
-                                            };
-
-                AddDifference(parms.Result, difference);
-                
-                return true;
-            }
-            return false;
         }
     }
 }

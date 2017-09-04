@@ -18,16 +18,22 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         {
         }
 
-        /// <summary>
-        /// If true the type comparer will handle the comparison for the type
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns><c>true</c> if [is type match] [the specified type1]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override bool IsTypeMatch(Type type1, Type type2)
+        private void CompareProp(CompareParms parms, object prop1, object prop2, string propName)
         {
-            return TypeHelper.IsFont(type1) && TypeHelper.IsFont(type2);
+            var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, propName);
+
+            CompareParms childParms = new CompareParms
+            {
+                Result = parms.Result,
+                Config = parms.Config,
+                ParentObject1 = parms.Object1,
+                ParentObject2 = parms.Object2,
+                Object1 = prop1,
+                Object2 = prop2,
+                BreadCrumb = currentBreadCrumb
+            };
+
+            RootComparer.Compare(childParms);
         }
 
         /// <summary>
@@ -53,22 +59,16 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             CompareProp(parms, font1.Unit, font2.Unit, "Unit");
         }
 
-        private void CompareProp(CompareParms parms, object prop1, object prop2, string propName)
+        /// <summary>
+        /// If true the type comparer will handle the comparison for the type
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns><c>true</c> if [is type match] [the specified type1]; otherwise, <c>false</c>.</returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override bool IsTypeMatch(Type type1, Type type2)
         {
-            string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, propName);
-
-            CompareParms childParms = new CompareParms
-            {
-                Result = parms.Result,
-                Config = parms.Config,
-                ParentObject1 = parms.Object1,
-                ParentObject2 = parms.Object2,
-                Object1 = prop1,
-                Object2 = prop2,
-                BreadCrumb = currentBreadCrumb
-            };
-
-            RootComparer.Compare(childParms);
+            return TypeHelper.IsFont(type1) && TypeHelper.IsFont(type2);
         }
     }
 }

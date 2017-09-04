@@ -1,8 +1,9 @@
 ﻿using System;
-
+using System.Text;
 
 namespace KellermanSoftware.CompareNetObjects
 {
+
     /// <summary>
     /// Compare Parameters
     /// </summary>
@@ -11,7 +12,7 @@ namespace KellermanSoftware.CompareNetObjects
         /// <summary>
         /// The breadcrumb in the tree
         /// </summary>
-        public string BreadCrumb { get; set; }
+        public BreadCrumb BreadCrumb { get; set; }
 
 
         /// <summary>
@@ -86,9 +87,9 @@ namespace KellermanSoftware.CompareNetObjects
         {
             unchecked // Overflow is fine, just wrap
             {
-                int hash = (int) 2166136261;
+                int hash = (int)2166136261;
 
-                hash = Object1 == null ? hash : hash *16777619 ^ Object1.GetHashCode();
+                hash = Object1 == null ? hash : hash * 16777619 ^ Object1.GetHashCode();
                 hash = Object2 == null ? hash : hash * 16777619 ^ Object2.GetHashCode();
                 return hash;
             }

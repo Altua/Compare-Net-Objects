@@ -17,17 +17,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         { }
 
         /// <summary>
-        /// Returns true if this is a DataRow
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsDataRow(type1) && TypeHelper.IsDataRow(type2);
-        }
-
-        /// <summary>
         /// Compare two data rows
         /// </summary>
         public override void CompareType(CompareParms parms)
@@ -57,7 +46,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 if (dataRow1.IsNull(i) && dataRow2.IsNull(i))
                     continue;
 
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, dataRow1.Table.Columns[i].ColumnName);
+                var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, dataRow1.Table.Columns[i].ColumnName);
 
                 //Check if one of them is null
                 if (dataRow1.IsNull(i))
@@ -66,7 +55,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                     {
                         ParentObject1 = new WeakReference(parms.ParentObject1),
                         ParentObject2 = new WeakReference(parms.ParentObject2),
-                        PropertyName = currentBreadCrumb,
+                        PropertyName = currentBreadCrumb.ToString(),
                         Object1Value = "(null)",
                         Object2Value = NiceString(dataRow2[i]),
                         Object1 = new WeakReference(parms.Object1),
@@ -83,7 +72,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                     {
                         ParentObject1 = new WeakReference(parms.ParentObject1),
                         ParentObject2 = new WeakReference(parms.ParentObject2),
-                        PropertyName = currentBreadCrumb,
+                        PropertyName = currentBreadCrumb.ToString(),
                         Object1Value = NiceString(dataRow1[i]),
                         Object2Value = "(null)",
                         Object1 = new WeakReference(parms.Object1),
@@ -101,7 +90,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                     {
                         ParentObject1 = new WeakReference(parms.ParentObject1),
                         ParentObject2 = new WeakReference(parms.ParentObject2),
-                        PropertyName = currentBreadCrumb,
+                        PropertyName = currentBreadCrumb.ToString(),
                         Object1Value = dataRow1.RowState.ToString(),
                         Object2Value = dataRow2.RowState.ToString(),
                         Object1 = new WeakReference(parms.Object1),
@@ -126,6 +115,17 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 if (parms.Result.ExceededDifferences)
                     return;
             }
+        }
+
+        /// <summary>
+        /// Returns true if this is a DataRow
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsDataRow(type1) && TypeHelper.IsDataRow(type2);
         }
     }
 }

@@ -28,7 +28,6 @@
 // * .NET Link Tracker
 // * .NET PGP Library
 
-#region Includes
 
 using System;
 using System.Collections.Generic;
@@ -37,9 +36,7 @@ using System.Collections.Generic;
 using KellermanSoftware.CompareNetObjects.Properties;
 #endif
 
-#endregion
 
-#region License
 //Microsoft Public License (Ms-PL)
 
 //This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
@@ -71,7 +68,6 @@ using KellermanSoftware.CompareNetObjects.Properties;
 //(D) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
 
 //(E) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
-#endregion
 
 namespace KellermanSoftware.CompareNetObjects
 {
@@ -97,16 +93,8 @@ namespace KellermanSoftware.CompareNetObjects
     /// </example>
     public class CompareLogic : ICompareLogic
     {
-        #region Properties
 
-        /// <summary>
-        /// The default configuration
-        /// </summary>
-        public ComparisonConfig Config { get; set; }
 
-        #endregion
-
-        #region Constructor
 
         /// <summary>
         /// Set up defaults for the comparison
@@ -125,7 +113,12 @@ namespace KellermanSoftware.CompareNetObjects
             Config = config;
         }
 
-        #if !PORTABLE && !NEWPCL
+        /// <summary>
+        /// The default configuration
+        /// </summary>
+        public ComparisonConfig Config { get; set; }
+
+#if !PORTABLE && !NEWPCL
 
         /// <summary>
         /// Set up defaults for the comparison
@@ -172,9 +165,7 @@ namespace KellermanSoftware.CompareNetObjects
         }
 #endif
 
-        #endregion
 
-        #region Public Methods
         /// <summary>
         /// Compare two objects of the same type to each other.
         /// </summary>
@@ -189,9 +180,9 @@ namespace KellermanSoftware.CompareNetObjects
         {
             ComparisonResult result = new ComparisonResult(Config);
 
-            #if !PORTABLE && !NEWPCL
-                result.Watch.Start();
-            #endif
+#if !PORTABLE && !NEWPCL
+            result.Watch.Start();
+#endif
 
             RootComparer rootComparer = RootComparerFactory.GetRootComparer();
 
@@ -201,7 +192,7 @@ namespace KellermanSoftware.CompareNetObjects
                 Result = result,
                 Object1 = object1,
                 Object2 = object2,
-                BreadCrumb = object1?.GetType().ToString() ?? object2?.GetType().ToString() ?? string.Empty
+                BreadCrumb = new BreadCrumb(null, object1?.GetType().ToString() ?? object2?.GetType().ToString() ?? string.Empty)
             };
 
             rootComparer.Compare(parms);
@@ -209,9 +200,9 @@ namespace KellermanSoftware.CompareNetObjects
             if (Config.AutoClearCache)
                 ClearCache();
 
-            #if !PORTABLE && !NEWPCL
-                result.Watch.Stop();
-            #endif
+#if !PORTABLE && !NEWPCL
+            result.Watch.Stop();
+#endif
 
             return result;
         }
@@ -224,7 +215,6 @@ namespace KellermanSoftware.CompareNetObjects
             Cache.ClearCache();
         }
 
-        #endregion
 
     }
 }

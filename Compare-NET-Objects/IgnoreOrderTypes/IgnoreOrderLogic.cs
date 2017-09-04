@@ -13,8 +13,8 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
     /// </summary>
     public class IgnoreOrderLogic : BaseComparer
     {
-        private readonly RootComparer _rootComparer;
         private readonly List<string> _alreadyCompared = new List<string>();
+        private readonly RootComparer _rootComparer;
 
 
         /// <summary>
@@ -26,41 +26,11 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
             _rootComparer = rootComparer;
         }
 
-        /// <summary>
-        /// Compares the enumerators and ignores the order
-        /// </summary>
-        public void CompareEnumeratorIgnoreOrder(CompareParms parms, bool countsDifferent)
-        {
-            if (countsDifferent)
-            {
-                CompareOutOfOrder(parms, false);
-
-                if (!parms.Result.ExceededDifferences)
-                {
-                    CompareOutOfOrder(parms, true);
-                }
-            }
-            else
-            {
-                bool comparedInOrder = CompareInOrder(parms);
-
-                if (!comparedInOrder && !parms.Result.ExceededDifferences)
-                {
-                    CompareOutOfOrder(parms, false);
-
-                    if (!parms.Result.ExceededDifferences)
-                    {
-                        CompareOutOfOrder(parms, true);
-                    }
-                }
-            }
-        }
-
 
         private bool CompareInOrder(CompareParms parms)
         {
-            IEnumerator enumerator1 = ((IEnumerable) parms.Object1).GetEnumerator();
-            IEnumerator enumerator2 = ((IEnumerable) parms.Object2).GetEnumerator();
+            IEnumerator enumerator1 = ((IEnumerable)parms.Object1).GetEnumerator();
+            IEnumerator enumerator2 = ((IEnumerable)parms.Object2).GetEnumerator();
             List<string> matchingSpec = null;
 
             while (enumerator1.MoveNext())
@@ -91,7 +61,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
 
                     if (matchIndex1 == matchIndex2)
                     {
-                        string currentBreadCrumb = string.Format("{0}[{1}]", parms.BreadCrumb, matchIndex1);
+
 
                         CompareParms childParms = new CompareParms
                         {
@@ -101,7 +71,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
                             ParentObject2 = enumerator2.Current,
                             Object1 = enumerator1.Current,
                             Object2 = enumerator2.Current,
-                            BreadCrumb = currentBreadCrumb
+                            BreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, matchIndex1)
                         };
 
                         _rootComparer.Compare(childParms);
@@ -128,7 +98,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
 
             if (!reverseCompare)
             {
-                enumerator1 = ((IEnumerable) parms.Object1).GetEnumerator();
+                enumerator1 = ((IEnumerable)parms.Object1).GetEnumerator();
             }
             else
             {
@@ -150,12 +120,12 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
                 if (_alreadyCompared.Contains(matchIndex1))
                     continue;
 
-                string currentBreadCrumb = string.Format("{0}[{1}]", parms.BreadCrumb, matchIndex1);
+                var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, matchIndex1);
                 IEnumerator enumerator2;
 
                 if (!reverseCompare)
                 {
-                    enumerator2 = ((IEnumerable) parms.Object2).GetEnumerator();
+                    enumerator2 = ((IEnumerable)parms.Object2).GetEnumerator();
                 }
                 else
                 {
@@ -199,7 +169,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
                     {
                         ParentObject1 = new WeakReference(parms.ParentObject1),
                         ParentObject2 = new WeakReference(parms.ParentObject2),
-                        PropertyName = currentBreadCrumb,
+                        PropertyName = currentBreadCrumb.ToString(),
                         Object1Value = reverseCompare ? "(null)" : NiceString(enumerator1.Current),
                         Object2Value = reverseCompare ? NiceString(enumerator1.Current) : "(null)",
                         ChildPropertyName = "Item",
@@ -207,14 +177,14 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
                         Object2 = reverseCompare ? new WeakReference(enumerator1) : null
                     };
 
-                    AddDifference(parms.Result, difference);                    
+                    AddDifference(parms.Result, difference);
                 }
                 if (parms.Result.ExceededDifferences)
                     return;
 
             }
 
-         
+
         }
 
 
@@ -239,7 +209,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
 
                 if (propertyValue == null)
                 {
-                    sb.AppendFormat("{0}:(null),",item);
+                    sb.AppendFormat("{0}:(null),", item);
                 }
                 else
                 {
@@ -256,7 +226,7 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
 
 
 
-        private List<string> GetMatchingSpec(ComparisonResult result,Type type)
+        private List<string> GetMatchingSpec(ComparisonResult result, Type type)
         {
             //The user defined a key for the order
             if (result.Config.CollectionMatchingSpec.Keys.Contains(type))
@@ -276,6 +246,36 @@ namespace KellermanSoftware.CompareNetObjects.IgnoreOrderTypes
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// Compares the enumerators and ignores the order
+        /// </summary>
+        public void CompareEnumeratorIgnoreOrder(CompareParms parms, bool countsDifferent)
+        {
+            if (countsDifferent)
+            {
+                CompareOutOfOrder(parms, false);
+
+                if (!parms.Result.ExceededDifferences)
+                {
+                    CompareOutOfOrder(parms, true);
+                }
+            }
+            else
+            {
+                bool comparedInOrder = CompareInOrder(parms);
+
+                if (!comparedInOrder && !parms.Result.ExceededDifferences)
+                {
+                    CompareOutOfOrder(parms, false);
+
+                    if (!parms.Result.ExceededDifferences)
+                    {
+                        CompareOutOfOrder(parms, true);
+                    }
+                }
+            }
         }
 
 

@@ -26,14 +26,14 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
             //Get enumerators by reflection
             MethodInfo method1Info = Cache.GetMethod(parms.Object1Type, "GetEnumerator");
-            IEnumerator enumerator1 = (IEnumerator) method1Info.Invoke(parms.Object1, null);
+            IEnumerator enumerator1 = (IEnumerator)method1Info.Invoke(parms.Object1, null);
 
             MethodInfo method2Info = Cache.GetMethod(parms.Object2Type, "GetEnumerator");
-            IEnumerator enumerator2 = (IEnumerator) method2Info.Invoke(parms.Object2, null);
+            IEnumerator enumerator2 = (IEnumerator)method2Info.Invoke(parms.Object2, null);
 
             while (enumerator1.MoveNext() && enumerator2.MoveNext())
             {
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
+                var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
 
                 CompareParms childParms = new CompareParms
                 {
@@ -59,8 +59,8 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         private bool HashSetsDifferentCount(CompareParms parms)
         {
             //Get count by reflection since we can't cast it to HashSet<>
-            int hashSet1Count = (int) Cache.GetPropertyValue(parms.Result, parms.Object1Type, parms.Object1, "Count");
-            int hashSet2Count = (int) Cache.GetPropertyValue(parms.Result, parms.Object2Type, parms.Object2, "Count");
+            int hashSet1Count = (int)Cache.GetPropertyValue(parms.Result, parms.Object1Type, parms.Object1, "Count");
+            int hashSet2Count = (int)Cache.GetPropertyValue(parms.Result, parms.Object2Type, parms.Object2, "Count");
 
             //Objects must be the same length
             if (hashSet1Count != hashSet2Count)
@@ -69,7 +69,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 {
                     ParentObject1 = new WeakReference(parms.ParentObject1),
                     ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = hashSet1Count.ToString(CultureInfo.InvariantCulture),
                     Object2Value = hashSet2Count.ToString(CultureInfo.InvariantCulture),
                     ChildPropertyName = "Count",

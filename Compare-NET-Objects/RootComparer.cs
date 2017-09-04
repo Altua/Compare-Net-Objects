@@ -11,17 +11,56 @@ namespace KellermanSoftware.CompareNetObjects
     /// </summary>
     public class RootComparer : BaseComparer
     {
-        #region Properties
 
         /// <summary>
         /// A list of the type comparers
         /// </summary>
         internal List<BaseTypeComparer> TypeComparers { get; set; }
 
-        #endregion
+
+        private bool EitherObjectIsNull(CompareParms parms)
+        {
+            //Check if one of them is null
+            if (parms.Object1 == null || parms.Object2 == null)
+            {
+                AddDifference(parms);
+                return true;
+            }
+
+            return false;
+        }
 
 
-        #region Methods
+        private bool TypesDifferent(CompareParms parms, Type t1, Type t2)
+        {
+            //Objects must be the same type and not be null
+            if (!parms.Config.IgnoreObjectTypes
+                && parms.Object1 != null
+                && parms.Object2 != null
+                && t1 != t2)
+            {
+                Difference difference = new Difference
+                {
+                    ParentObject1 = new WeakReference(parms.ParentObject1),
+                    ParentObject2 = new WeakReference(parms.ParentObject2),
+                    PropertyName = parms.BreadCrumb.ToString(),
+                    Object1Value = t1.FullName,
+                    Object2Value = t2.FullName,
+                    ChildPropertyName = "GetType()",
+                    MessagePrefix = "Different Types",
+                    Object1 = new WeakReference(parms.Object1),
+                    Object2 = new WeakReference(parms.Object2)
+                };
+
+                AddDifference(parms.Result, difference);
+                return true;
+            }
+
+            return false;
+        }
+
+
+
 
         /// <summary>
         /// Compare two objects
@@ -93,48 +132,5 @@ namespace KellermanSoftware.CompareNetObjects
             return result;
         }
 
-
-        private bool TypesDifferent(CompareParms parms, Type t1, Type t2)
-        {
-            //Objects must be the same type and not be null
-            if (!parms.Config.IgnoreObjectTypes
-                && parms.Object1 != null
-                && parms.Object2 != null
-                && t1 != t2)
-            {
-                Difference difference = new Difference
-                {
-                    ParentObject1 = new WeakReference(parms.ParentObject1),
-                    ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
-                    Object1Value = t1.FullName,
-                    Object2Value = t2.FullName,
-                    ChildPropertyName = "GetType()",
-                    MessagePrefix = "Different Types",
-                    Object1 = new WeakReference(parms.Object1),
-                    Object2 = new WeakReference(parms.Object2)
-                };
-
-                AddDifference(parms.Result, difference);
-                return true;
-            }
-
-            return false;
-        }
-
-
-        private bool EitherObjectIsNull(CompareParms parms)
-        {
-            //Check if one of them is null
-            if (parms.Object1 == null || parms.Object2 == null)
-            {
-                AddDifference(parms);
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion
     }
 }

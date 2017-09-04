@@ -16,17 +16,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         }
 
         /// <summary>
-        /// Returns true if both types are a pointer
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsPointer(type1) && TypeHelper.IsPointer(type2);
-        }
-
-        /// <summary>
         /// Compare two pointers
         /// </summary>
         public override void CompareType(CompareParms parms)
@@ -38,13 +27,24 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 {
                     ParentObject1 = new WeakReference(parms.ParentObject1),
                     ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1 = new WeakReference(parms.Object1),
                     Object2 = new WeakReference(parms.Object2)
                 };
 
                 AddDifference(parms.Result, difference);
             }
+        }
+
+        /// <summary>
+        /// Returns true if both types are a pointer
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsPointer(type1) && TypeHelper.IsPointer(type2);
         }
     }
 }

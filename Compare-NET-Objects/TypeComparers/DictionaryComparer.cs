@@ -73,6 +73,8 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 BreadCrumb = AddBreadCrumb(@params.Config, @params.BreadCrumb, propertyName),
             };
 
+            childParams.Result.CacheInProgress.Add(childParams, true);
+
             try
             {
                 RootComparer.Compare(childParams);
@@ -151,7 +153,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 {
                     ParentObject1 = new WeakReference(parms.ParentObject1),
                     ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = iDict1.Count.ToString(CultureInfo.InvariantCulture),
                     Object2Value = iDict2.Count.ToString(CultureInfo.InvariantCulture),
                     ChildPropertyName = "Count",

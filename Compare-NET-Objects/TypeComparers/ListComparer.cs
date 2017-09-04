@@ -23,13 +23,13 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         private void CompareItems(CompareParms parms)
         {
             int count = 0;
-            IEnumerator enumerator1 = ((IList) parms.Object1).GetEnumerator();
-            IEnumerator enumerator2 = ((IList) parms.Object2).GetEnumerator();
+            IEnumerator enumerator1 = ((IList)parms.Object1).GetEnumerator();
+            IEnumerator enumerator2 = ((IList)parms.Object2).GetEnumerator();
 
             while (enumerator1.MoveNext() && enumerator2.MoveNext())
             {
 
-                string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
+                var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, string.Empty, string.Empty, count);
 
                 CompareParms childParms = new CompareParms
                 {
@@ -72,7 +72,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                     {
                         ParentObject1 = new WeakReference(parms.ParentObject1),
                         ParentObject2 = new WeakReference(parms.ParentObject2),
-                        PropertyName = parms.BreadCrumb,
+                        PropertyName = parms.BreadCrumb.ToString(),
                         Object1Value = ilist1.Count.ToString(CultureInfo.InvariantCulture),
                         Object2Value = ilist2.Count.ToString(CultureInfo.InvariantCulture),
                         ChildPropertyName = "Count",

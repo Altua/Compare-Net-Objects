@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
@@ -44,7 +44,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             object objectValue1 = item.GetValue(parms.Object1);
             object objectValue2 = secondFieldInfo != null ? secondFieldInfo.GetValue(parms.Object2) : null;
 
-            string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, item.Name);
+            var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, item.Name);
 
             CompareParms childParms = new CompareParms
             {

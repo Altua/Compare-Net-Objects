@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 
 namespace KellermanSoftware.CompareNetObjects.TypeComparers
@@ -73,7 +73,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 return;
             }
 
-            string currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, info.Name);
+            var currentBreadCrumb = AddBreadCrumb(parms.Config, parms.BreadCrumb, info.Name);
 
             CompareParms childParms = new CompareParms
             {
@@ -137,7 +137,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         }
 
 
-        private bool IsValidIndexer(ComparisonConfig config, PropertyInfo info, string breadCrumb, out bool indexer)
+        private bool IsValidIndexer(ComparisonConfig config, PropertyInfo info, BreadCrumb breadCrumb, out bool indexer)
         {
             ParameterInfo[] indexers = info.GetIndexParameters();
 

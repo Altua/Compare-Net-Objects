@@ -18,7 +18,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// <param name="existing">The existing breadcrumb</param>
         /// <param name="name">The field or property name</param>
         /// <returns>The new breadcrumb</returns>
-        protected string AddBreadCrumb(ComparisonConfig config, string existing, string name)
+        protected BreadCrumb AddBreadCrumb(ComparisonConfig config, BreadCrumb existing, string name)
         {
             return AddBreadCrumb(config, existing, name, string.Empty, null);
         }
@@ -32,7 +32,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// <param name="extra">Extra information to output after the name</param>
         /// <param name="index">The index for an array, list, or row</param>
         /// <returns>The new breadcrumb</returns>
-        protected string AddBreadCrumb(ComparisonConfig config, string existing, string name, string extra, int index)
+        protected BreadCrumb AddBreadCrumb(ComparisonConfig config, BreadCrumb existing, string name, string extra, int index)
         {
             return AddBreadCrumb(config, existing, name, extra, index >= 0 ? index.ToString(CultureInfo.InvariantCulture) : null);
         }
@@ -46,7 +46,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         /// <param name="extra">Extra information to append after the name</param>
         /// <param name="index">The index if it is an array, list, row etc.</param>
         /// <returns>The new breadcrumb</returns>
-        protected string AddBreadCrumb(ComparisonConfig config, string existing, string name, string extra, string index)
+        protected BreadCrumb AddBreadCrumb(ComparisonConfig config, BreadCrumb existing, string name, string extra, string index)
         {
             if (config == null)
                 throw new ArgumentNullException("config");
@@ -59,11 +59,8 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             bool useName = name.Length > 0;
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(existing);
-
             if (useName)
             {
-                sb.AppendFormat(".");
                 sb.Append(name);
             }
 
@@ -71,16 +68,16 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
             if (useIndex)
             {
-                // ReSharper disable RedundantAssignment
-                int result = -1;
-                // ReSharper restore RedundantAssignment
-                sb.AppendFormat(Int32.TryParse(index, out result) ? "[{0}]" : "[\"{0}\"]", index);
+                int realIndex = -1;
+                sb.AppendFormat(Int32.TryParse(index, out realIndex) ? "[{0}]" : "[\"{0}\"]", index);
             }
 
-            if (config.ShowBreadcrumb)
-                Debug.WriteLine(sb.ToString());
+            var result = new BreadCrumb(existing, sb.ToString());
 
-            return sb.ToString();
+            if (config.ShowBreadcrumb)
+                Debug.WriteLine(result.ToString());
+
+            return result;
         }
 
         /// <summary>
@@ -96,7 +93,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
             {
                 ParentObject1 = new WeakReference(parameters.ParentObject1),
                 ParentObject2 = new WeakReference(parameters.ParentObject2),
-                PropertyName = parameters.BreadCrumb,
+                PropertyName = parameters.BreadCrumb.ToString(),
                 Object1Value = NiceString(parameters.Object1),
                 Object2Value = NiceString(parameters.Object2),
                 Object1 = new WeakReference(parameters.Object1),

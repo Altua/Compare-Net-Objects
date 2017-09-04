@@ -16,17 +16,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
         }
 
         /// <summary>
-        /// Returns true if both types are a URI
-        /// </summary>
-        /// <param name="type1">The type of the first object</param>
-        /// <param name="type2">The type of the second object</param>
-        /// <returns></returns>
-        public override bool IsTypeMatch(Type type1, Type type2)
-        {
-            return TypeHelper.IsUri(type1) && TypeHelper.IsUri(type2);
-        }
-
-        /// <summary>
         /// Compare two URIs
         /// </summary>
         public override void CompareType(CompareParms parms)
@@ -44,7 +33,7 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 {
                     ParentObject1 = new WeakReference(parms.ParentObject1),
                     ParentObject2 = new WeakReference(parms.ParentObject2),
-                    PropertyName = parms.BreadCrumb,
+                    PropertyName = parms.BreadCrumb.ToString(),
                     Object1Value = NiceString(uri1.OriginalString),
                     Object2Value = NiceString(uri2.OriginalString),
                     ChildPropertyName = "OriginalString",
@@ -54,6 +43,17 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
 
                 AddDifference(parms.Result, difference);
             }
+        }
+
+        /// <summary>
+        /// Returns true if both types are a URI
+        /// </summary>
+        /// <param name="type1">The type of the first object</param>
+        /// <param name="type2">The type of the second object</param>
+        /// <returns></returns>
+        public override bool IsTypeMatch(Type type1, Type type2)
+        {
+            return TypeHelper.IsUri(type1) && TypeHelper.IsUri(type2);
         }
     }
 }
