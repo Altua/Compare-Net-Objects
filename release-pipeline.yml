@@ -25,19 +25,13 @@ steps:
     artifactName: 'Altua.CompareNetObjects'
     targetPath: '$(Pipeline.Workspace)'
 
-
-
-- task: DotNetCoreCLI@2
-  displayName: Pack artifacts
+- task: NuGetCommand@2
   inputs:
     command: 'pack'
-    packagesToPack: '$(Pipeline.Workspace)/Altua.WebApi.Models.csproj'
+    packagesToPack: 'Compare-NET-Objects.nuspec'
+    packDestination: '$(Pipeline.Workspace)/Package'
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'PackageVersion'
-    packDirectory: '$(Pipeline.Workspace)/Package'
-    nobuild: true
-    configuration: $(buildConfiguration)
-    arguments: '--force'
   
 - task: DotNetCoreCLI@2
   displayName: Push package
