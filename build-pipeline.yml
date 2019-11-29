@@ -1,0 +1,47 @@
+name: $(Build.SourceBranchName)-$(Year:yy).$(Month).$(DayOfYear).$(Revision)
+
+trigger:
+- master
+
+pr:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: Altua/BuildTemplates
+      endpoint: Altua
+
+variables:
+  solution: 'Compare-NET-Objects/Compare-NET-Objects.csproj'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  disable.coverage.autogenerate: 'true'
+  Revision: $[counter('altua.comparenetobjects', 0)]
+
+steps:
+- template: assemblyversion-variable-template.yml@templates
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration) --no-restore -p:Version=$(assemblyVersion)'
+	
+- task: CopyFiles@2
+  inputs:
+    Contents: |
+		Compare-NET-Objects\bin\Release\KellermanSoftware.Compare-NET-Objects.dll
+		Compare-NET-Objects\Compare-NET-Objects.nuspec
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishPipelineArtifact@1
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)\Compare-NET-Objects'
+    artifact: 'Altua.CompareNetObjects'
