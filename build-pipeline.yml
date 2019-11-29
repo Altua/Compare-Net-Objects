@@ -38,8 +38,8 @@ steps:
   displayName: Copy files to staging
   inputs:
     Contents:
-      Compare-NET-Objects\bin\Release\KellermanSoftware.Compare-NET-Objects.dll
-      Compare-NET-Objects\Compare-NET-Objects.nuspec
+      $(Build.SourcesDirectory)\Compare-NET-Objects\bin\$(buildConfiguration)\KellermanSoftware.Compare-NET-Objects.dll
+      $(Build.SourcesDirectory)\Compare-NET-Objects\Compare-NET-Objects.nuspec
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishPipelineArtifact@1
