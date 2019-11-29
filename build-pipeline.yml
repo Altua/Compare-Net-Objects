@@ -35,9 +35,9 @@ steps:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   displayName: Copy files to staging
   inputs:
-    Contents:
-      '**\bin\$(buildConfiguration)\KellermanSoftware.Compare-NET-Objects.dll'
-      '**\Compare-NET-Objects\Compare-NET-Objects.nuspec'
+    Contents: |
+      **\bin\$(buildConfiguration)\KellermanSoftware.Compare-NET-Objects.dll
+      **\Compare-NET-Objects\Compare-NET-Objects.nuspec
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishPipelineArtifact@1
