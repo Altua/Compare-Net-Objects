@@ -22,8 +22,10 @@ steps:
     specificBuildWithTriggering: false
     buildVersionToDownload: 'latestFromBranch'
     branchName: 'refs/heads/master'
-    artifactName: 'Altua.WebApi.Models'
+    artifactName: 'Altua.CompareNetObjects'
     targetPath: '$(Pipeline.Workspace)'
+
+
 
 - task: DotNetCoreCLI@2
   displayName: Pack artifacts
