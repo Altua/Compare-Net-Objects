@@ -1,0 +1,42 @@
+trigger: none
+
+pr: none
+
+pool:
+  vmImage: 'windows-latest'
+  
+variables:
+  buildConfiguration: Release
+  Major: 1
+  Minor: 0
+  Revision: $[counter(format('{0}-{1}', variables['Major'], variables['Minor']), 0)]
+  PackageVersion: $[format('{0}.{1}.{2}', variables['Major'], variables['Minor'], variables['Revision'])]
+
+steps:
+- task: DownloadPipelineArtifact@2
+  displayName: Download package artifacts
+  inputs:
+    buildType: 'specific'
+    project: 'a119dd29-1840-4811-bac7-d797f815186b'
+    definition: '79'
+    specificBuildWithTriggering: false
+    buildVersionToDownload: 'latestFromBranch'
+    branchName: 'refs/heads/master'
+    artifactName: 'Altua.CompareNetObjects'
+    targetPath: '$(Pipeline.Workspace)'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'pack'
+    packagesToPack: 'Compare-NET-Objects.nuspec'
+    packDestination: '$(Pipeline.Workspace)/Package'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'PackageVersion'
+  
+- task: DotNetCoreCLI@2
+  displayName: Push package
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Pipeline.Workspace)/Package/**/*.nupkg;!$(Pipeline.Workspace)/Package/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'a0b0aaaa-c5cc-43c6-af3e-60bcbbc1f245'
