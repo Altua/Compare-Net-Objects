@@ -28,7 +28,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
-    packagesToPack: 'Compare-NET-Objects.nuspec'
+    packagesToPack: '$(Pipeline.Workspace)/Compare-NET-Objects.nuspec'
     packDestination: '$(Pipeline.Workspace)/Package'
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'PackageVersion'
