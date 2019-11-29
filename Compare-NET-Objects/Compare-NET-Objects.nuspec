@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>altua-compare-net-objects</id>
+        <version>1.0.0</version>
+        <title>compare-net-objects</title>
+        <authors>KellermanSoftware</authors>
+        <owners>KellermanSoftware</owners>   
+        <dependencies>                        
+            <group targetFramework="net45" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="bin\Release\KellermanSoftware.Compare-NET-Objects.dll" target="lib\net45\KellermanSoftware.Compare-NET-Objects.dll"/>        
+    </files>
+</package>
