@@ -5,7 +5,8 @@
         <version>1.0.0</version>
         <title>compare-net-objects</title>
         <authors>KellermanSoftware</authors>
-        <owners>KellermanSoftware</owners>   
+        <owners>KellermanSoftware</owners>
+		<description>Altua Compare-NET-Objects</description>
         <dependencies>                        
             <group targetFramework="net45" />
         </dependencies>
