@@ -17,7 +17,7 @@ steps:
   displayName: Download package artifacts
   inputs:
     buildType: 'specific'
-    project: 'fcd071f4-d734-4af8-88ef-eb7262e832af'
+    project: 'a119dd29-1840-4811-bac7-d797f815186b'
     definition: '100'
     specificBuildWithTriggering: false
     buildVersionToDownload: 'latestFromBranch'
