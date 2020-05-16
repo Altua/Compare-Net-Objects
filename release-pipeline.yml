@@ -7,8 +7,8 @@ pool:
   
 variables:
   buildConfiguration: Release
-  Major: 2
-  Minor: 0
+  Major: 1
+  Minor: 2
   Revision: $[counter(format('{0}-{1}', variables['Major'], variables['Minor']), 0)]
   PackageVersion: $[format('{0}.{1}.{2}', variables['Major'], variables['Minor'], variables['Revision'])]
 
@@ -17,7 +17,7 @@ steps:
   displayName: Download package artifacts
   inputs:
     buildType: 'specific'
-    project: 'b63fe9f7-001a-4910-a3b1-a468de2437ef'
+    project: 'fcd071f4-d734-4af8-88ef-eb7262e832af'
     definition: '100'
     specificBuildWithTriggering: false
     buildVersionToDownload: 'latestFromBranch'
