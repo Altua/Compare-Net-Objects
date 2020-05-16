@@ -73,8 +73,6 @@ namespace KellermanSoftware.CompareNetObjects.TypeComparers
                 BreadCrumb = AddBreadCrumb(@params.Config, @params.BreadCrumb, propertyName),
             };
 
-            childParams.Result.CacheInProgress.Add(childParams, true);
-
             try
             {
                 RootComparer.Compare(childParams);
