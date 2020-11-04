@@ -15,11 +15,17 @@ resources:
       endpoint: Altua
 
 variables:
-  solution: 'Compare-NET-Objects/Compare-NET-Objects.csproj'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  disable.coverage.autogenerate: 'true'
-  Revision: $[counter('altua.comparenetobjects', 0)]
+- group: secrets
+- name: solution
+  value: 'Compare-NET-Objects/Compare-NET-Objects.csproj'
+- name: buildPlatform 
+  value: 'Any CPU'
+- name: buildConfiguration
+  value: 'Release'
+- name: disable.coverage.autogenerate
+  value: 'true'
+- name: Revision
+  value: $[counter('altua.comparenetobjects', 0)]
 
 steps:
 - template: assemblyversion-variable-template.yml@templates
@@ -39,6 +45,24 @@ steps:
       **\bin\$(buildConfiguration)\KellermanSoftware.Compare-NET-Objects.dll
       **\Compare-NET-Objects\Compare-NET-Objects.nuspec
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: DownloadSecureFile@1    
+  name: certificate
+  displayName: 'Download code certificate'    
+  inputs:
+    secureFile: 'altua.code.2020.pfx'
+
+- task: PowerShell@2
+  displayName: Sign assemblies    
+  inputs:
+    targetType: 'inline'
+    script: |
+      $env:Path += ";${env:ProgramFiles(x86)}\Microsoft SDKs\ClickOnce\SignTool" 
+      $assemblies = gci '$(Build.ArtifactStagingDirectory)/**/KellermanSoftware.Compare-NET-Objects.dll' -Recurse
+      foreach($assembly in $assemblies) {
+          signtool sign /fd SHA1 /td SHA1 /f $(certificate.secureFilePath) /p $(certPass) /q /tr http://timestamp.digicert.com $assembly
+          signtool sign /fd SHA256 /td SHA256 /f $(certificate.secureFilePath) /p $(certPass) /q /as /tr http://timestamp.digicert.com $assembly
+      }
 
 - task: PublishPipelineArtifact@1
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
